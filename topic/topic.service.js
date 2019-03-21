@@ -22,13 +22,9 @@ async function addFollow(uid, topicString) {
     const userObj = await User.findById(uid)
     const tp = await Topic.findOne({ name: topicString });
     if (tp) {
-        try {
-            userObj.follows.push(tp._id);
-            await userObj.save();
-            return tp;
-        } catch (e) {
-            return tp;
-        }
+        userObj.follows.push(tp._id);
+        await userObj.save();
+        return tp;
     }
 
     else {
