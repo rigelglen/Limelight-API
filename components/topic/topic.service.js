@@ -1,4 +1,4 @@
-const db = require('_helpers/db');
+const db = require('core/db');
 const Topic = db.Topic;
 const User = db.User;
 const mongoose = require('mongoose');

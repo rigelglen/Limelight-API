@@ -1,4 +1,4 @@
 ﻿{
-    "connectionString": "mongodb://localhost/node-mongo-registration-login-api",
-    "secret": "THIS IS USED TO SIGN AND VERIFY JWT TOKENS, REPLACE IT WITH YOUR OWN SECRET, IT CAN BE ANY STRING"
+    "connectionString": "mongodb://localhost/limelight",
+    "secret": "0gZ2XDiJCf3BWWjCAxw4CI2Mhd5ycQl/1xiW/YyInoj3+xVjY2xNQprXAbk8Ill569Vsr8OscVPfgzByQw/78w=="
 }

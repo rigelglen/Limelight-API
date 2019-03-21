@@ -1,11 +1,11 @@
 {
-    "name": "node-mongo-registration-login-api",
+    "name": "limelight_api",
     "version": "1.0.0",
-    "description": "NodeJS + MongoDB API for User Management, Authentication and Registration",
+    "description": "Back-end for the news application which can detect fake news using machine learning.",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/cornflourblue/node-mongo-registration-login-api.git"
+        "url": "https://gitlab.com/mirandajyothy/limelight_api.git"
     },
     "scripts": {
         "start": "nodemon ./server.js",
