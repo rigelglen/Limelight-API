@@ -1,6 +1,7 @@
 const db = require('_helpers/db');
 const Topic = db.Topic;
 const User = db.User;
+const mongoose = require('mongoose');
 
 module.exports = {
     getFollows,
@@ -9,32 +10,49 @@ module.exports = {
 };
 
 async function getFollows(uid) {
-    const userFollows = await User.findById(uid).follows
+    const userFollows = await User.findById(uid);
 
-    const topics = Topic.find({ _id: { $in: userFollows } });
+    const topics = await Topic.find({ _id: { $in: userFollows.follows } });
 
     return topics;
-    // Person.
-    //     find({
-    //         occupation: /host/,
-    //         'name.last': 'Ghost',
-    //         age: { $gt: 17, $lt: 66 },
-    //         likes: { $in: ['vaporizing', 'talking'] }
-    //     }).
-    //     limit(10).
-    //     sort({ occupation: -1 }).
-    //     select({ name: 1, occupation: 1 }).
-    //     exec(callback);
-
 
 }
 
 async function addFollow(uid, topicString) {
+    const userObj = await User.findById(uid)
+    const tp = await Topic.findOne({ name: topicString });
+    if (tp) {
+        if (userObj.follows.indexOf(tp._id) === -1) {
+            userObj.follows.push(tp._id);
+            await userObj.save();
+        }
+        return tp;
+    }
+
+    else {
+        const newTopic = new Topic({ name: topicString });
+        await newTopic.save();
+        const _id = newTopic._id;
+        userObj.follows.push(_id);
+        await userObj.save()
+
+        return newTopic
+    }
 
 }
 
 async function removeFollow(uid, tid) {
+    const userObj = await User.findById(uid)
 
+    if (userObj.follows.indexOf(tid) === -1) {
+        return userObj.follows
+    }
+    else {
+        const index = userObj.follows.indexOf(tid)
+        userObj.follows.splice(index, 1)
+        await userObj.save()
+    }
+    return userObj.follows
 }
 
 
