@@ -7,6 +7,7 @@ router.post('/addFollow', addFollow);
 router.post('/removeFollow', removeFollow);
 router.get('/getFeed', getFeed);
 router.get('/getFeedByTopic', getFeedByTopic);
+router.get('/getFeedBySearch', getFeedBySearch)
 
 module.exports = router;
 
@@ -29,13 +30,19 @@ function removeFollow(req, res, next) {
 }
 
 function getFeed(req, res, next) {
-    topicService.getFeed(req.user.sub)
+    topicService.getFeed(req.user.sub, req.body.page)
         .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
         .catch(err => next(err));
 }
 
 function getFeedByTopic(req, res, next) {
-    topicService.getFeedByTopic(req.user.sub, req.body.topicString)
+    topicService.getFeedByTopic(req.body.topicId, req.body.page)
+        .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
+        .catch(err => next(err));
+}
+
+function getFeedBySearch(req, res, next) {
+    topicService.getFeedByTopic(req.body.searchString, req.body.page)
         .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
         .catch(err => next(err));
 }

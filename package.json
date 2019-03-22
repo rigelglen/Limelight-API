@@ -17,11 +17,15 @@
         "cors": "^2.8.4",
         "express": "^4.16.3",
         "express-jwt": "^5.3.1",
+        "html2plaintext": "^2.1.2",
         "jsonwebtoken": "^8.2.2",
+        "moment": "^2.24.0",
         "mongodb": "^3.0.10",
         "mongoose": "^5.1.4",
         "mongoose-unique-array": "^0.3.1",
-        "rootpath": "^0.1.2"
+        "newsapi": "^2.4.0",
+        "rootpath": "^0.1.2",
+        "rss-to-json": "^1.0.4"
     },
     "devDependencies": {
         "nodemon": "^1.18.10"
