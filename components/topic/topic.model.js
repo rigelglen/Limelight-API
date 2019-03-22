@@ -17,6 +17,7 @@ const schema = new Schema({
       return JSON.stringify(data);
     }
   },
+  isCat: { type: Boolean, default: false },
   lastRefreshed: { type: Date, default: Date.now }
 });
 

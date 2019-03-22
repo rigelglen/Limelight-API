@@ -24,8 +24,11 @@
         "mongoose": "^5.1.4",
         "mongoose-unique-array": "^0.3.1",
         "newsapi": "^2.4.0",
+        "request": "^2.88.0",
         "rootpath": "^0.1.2",
-        "rss-to-json": "^1.0.4"
+        "rss-to-json": "^1.0.4",
+        "util": "^0.11.1",
+        "xml2js": "^0.4.19"
     },
     "devDependencies": {
         "nodemon": "^1.18.10"
