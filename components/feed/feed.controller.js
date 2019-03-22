@@ -9,7 +9,7 @@ router.get('/getFeedBySearch', getFeedBySearch)
 module.exports = router;
 
 function getFeed(req, res, next) {
-  feedService.getFeedGNews(req.user.sub, req.body.page)
+  feedService.getFeed(req.user.sub, req.body.page)
     .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
     .catch(err => next(err));
 }

@@ -12,16 +12,44 @@ const gNews = require('config.json').gNews;
 
 module.exports = {
   getFeed,
-  getFeedGNews,
   getFeedByTopic,
   getFeedBySearch
 };
 
 async function getFeed(uid, page = 1) {
-  if (gNews)
-    getFeedGNews(uid, page);
-  else
-    getFeedNewsApi(uid, page);
+  const userObj = await User.findById(uid);
+  const separator = gNews ? '|' : 'OR'
+  const topics = await Topic.find({
+    "_id": {
+      $in: userObj.follows
+    }
+  });
+
+  const topicNames = topics.map((topic) => {
+    return topic.name;
+  });
+
+  let queryString = "";
+  let flag = 0;
+
+  topicNames.map((topic) => {
+    if (flag == 0) {
+      queryString = `${topic}`;
+      flag = 1;
+    }
+    else {
+      queryString = `${queryString} ${separator} ${topic}`;
+    }
+  });
+  if (gNews) {
+    let result = await queryNews(queryString, page);
+    result = result.sort((a, b) => b.publishedAt - a.publishedAt);
+
+    return paginate(result, page);
+  }
+  else {
+    return await queryNews(queryString, page);
+  }
 }
 
 
@@ -85,68 +113,6 @@ async function queryGNews(queryString, isCat) {
 
 }
 
-
-async function getFeedGNews(uid, page = 1) {
-  const userObj = await User.findById(uid);
-
-  const topics = await Topic.find({
-    "_id": {
-      $in: userObj.follows
-    }
-  });
-
-  const topicNames = topics.map((topic) => {
-    return topic.name;
-  });
-
-  let queryString = "";
-  let flag = 0;
-
-  topicNames.map((topic) => {
-    if (flag == 0) {
-      queryString = `${topic}`;
-      flag = 1;
-    }
-    else {
-      queryString = `${queryString} | ${topic}`;
-    }
-  });
-  let result = await queryNews(queryString, page);
-  result = result.sort((a, b) => b.publishedAt - a.publishedAt);
-
-  return paginate(result, page);
-
-}
-
-
-async function getFeedNewsApi(uid, page = 1) {
-  const userObj = await User.findById(uid);
-
-  const topics = await Topic.find({
-    "_id": {
-      $in: userObj.follows
-    }
-  });
-
-  const topicNames = topics.map((topic) => {
-    return topic.name;
-  });
-
-  let queryString = "";
-  let flag = 0;
-
-  topicNames.map((topic) => {
-    if (flag == 0) {
-      queryString = `${topic}`;
-      flag = 1;
-    }
-    else {
-      queryString = `${queryString} OR ${topic}`;
-    }
-  });
-  return await queryNews(queryString, page);
-
-}
 
 async function getFeedByTopic(topicId, page = 1) {
   const topic = await Topic.findById(topicId);
