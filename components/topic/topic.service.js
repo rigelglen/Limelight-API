@@ -124,6 +124,17 @@ async function queryNews(queryString, page) {
         pageSize: 30,
     });
 
-    return response;
+    let result = response.articles.map((article) => {
+        return {
+            title: article.title,
+            source: article.source.name,
+            description: article.description,
+            link: article.url,
+            image: article.urlToImage,
+            publishedAt: moment(article.publishedAt).unix()
+        }
+    });
+
+    return result;
 
 }
