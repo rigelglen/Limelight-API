@@ -5,6 +5,8 @@ const topicService = require('./topic.service');
 router.get('/getFollows', getFollows);
 router.post('/addFollow', addFollow);
 router.post('/removeFollow', removeFollow);
+router.get('/getFeed', getFeed);
+router.get('/getFeedByTopic', getFeedByTopic);
 
 module.exports = router;
 
@@ -25,4 +27,17 @@ function removeFollow(req, res, next) {
         .then(topics => topics ? res.json(topics) : res.status(400).json({ message: 'An error occured.' }))
         .catch(err => next(err));
 }
+
+function getFeed(req, res, next) {
+    topicService.getFeed(req.user.sub)
+        .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
+        .catch(err => next(err));
+}
+
+function getFeedByTopic(req, res, next) {
+    topicService.getFeedByTopic(req.user.sub, req.body.topicString)
+        .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
+        .catch(err => next(err));
+}
+
 
