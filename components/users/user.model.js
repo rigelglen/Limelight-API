@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const db = require('_helpers/db');
+const db = require('core/db');
 const uniqueArrayPlugin = require('mongoose-unique-array');
 
 const Schema = mongoose.Schema;
