@@ -9,7 +9,7 @@ const Feed = require('util/rss2json');
 const h2p = require('html2plaintext');
 const numArticles = require('config.json').numArticles;
 const gNews = require('config.json').gNews;
-const facebookKey = require('config.json').facebookKey;
+const facebookKey = process.env.facebookKey || require('config.json').facebookKey;
 const axios = require('axios');
 
 module.exports = {
@@ -48,6 +48,7 @@ async function getFeed(uid, page = 1) {
     result = result.sort((a, b) => b.publishedAt - a.publishedAt);
 
     return await addThumbs(paginate(result, page));
+    // return await paginate(result, page);
   }
   else {
     return await queryNews(queryString, page);
@@ -164,7 +165,7 @@ async function addThumbs(articles) {
       if (!article.media) {
         const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
         imgUrl = response.data.image[0].url;
-        console.log("Index is " + index + " URL is " + imgUrl);
+        // console.log("Index is " + index + " URL is " + imgUrl);
       }
     } catch (error) {
       //console.error(error);
