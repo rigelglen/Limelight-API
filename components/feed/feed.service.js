@@ -9,6 +9,8 @@ const Feed = require('util/rss2json');
 const h2p = require('html2plaintext');
 const numArticles = require('config.json').numArticles;
 const gNews = require('config.json').gNews;
+const facebookKey = require('config.json').facebookKey;
+const axios = require('axios');
 
 module.exports = {
   getFeed,
@@ -45,7 +47,7 @@ async function getFeed(uid, page = 1) {
     let result = await queryNews(queryString, page);
     result = result.sort((a, b) => b.publishedAt - a.publishedAt);
 
-    return paginate(result, page);
+    return await addThumbs(paginate(result, page));
   }
   else {
     return await queryNews(queryString, page);
@@ -90,12 +92,13 @@ async function queryGNews(queryString, isCat) {
     `https://news.google.com/rss/search?q=${queryString}`;
 
   return new Promise((resolve, reject) => {
-    Feed.load(url, function (err, rss) {
+    Feed.load(url, async function (err, rss) {
       if (err) {
         reject(err);
       }
 
-      const result = rss.items.map((article) => {
+      const result = await Promise.all(rss.items.map(async (article) => {
+
         return {
           title: article.title,
           source: article.source,
@@ -103,9 +106,9 @@ async function queryGNews(queryString, isCat) {
           link: article.link,
           image: article.media ? article.media.content[0].url[0] : undefined,
           publishedAt: article.created
-
         }
-      });
+
+      }));
 
       resolve(result);
     });
@@ -152,6 +155,23 @@ async function getFeedBySearch(searchString, page = 1) {
     return paginate(result, page);
   else
     return result;
+}
+
+async function addThumbs(articles) {
+  let imgUrl;
+  return await Promise.all(articles.map(async (article, index) => {
+    try {
+      if (!article.media) {
+        const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
+        imgUrl = response.data.image[0].url;
+        console.log("Index is " + index + " URL is " + imgUrl);
+      }
+    } catch (error) {
+      //console.error(error);
+    }
+    article.image = article.image ? article.image : imgUrl;
+    return article;
+  }));
 }
 
 
