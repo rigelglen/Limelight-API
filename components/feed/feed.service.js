@@ -28,27 +28,24 @@ async function getFeed(uid, page = 1) {
   }).select('name -_id');
 
   let queryString = "";
-  let flag = 0;
 
-  topicNames.map((topic) => {
-    if (flag == 0) {
+  topicNames.map((topic, index) => {
+    if (index == 0) {
       queryString = `${topic.name}`;
-      flag = 1;
     }
     else {
       queryString = `${queryString} ${separator} ${topic.name}`;
     }
   });
 
-  if (gNews) {
-    let result = await queryNews(queryString, page);
-    result = result.sort((a, b) => b.publishedAt - a.publishedAt);
+  let result = await queryNews(queryString, page);
 
+
+  if (gNews) {
     return await addMetaData(paginate(result, page));
-    // return await paginate(result, page);
   }
   else {
-    return await queryNews(queryString, page);
+    return result;
   }
 }
 
