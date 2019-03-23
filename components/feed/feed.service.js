@@ -145,7 +145,7 @@ async function getFeedByTopic(topicId, page = 1) {
   }
 
   if (gNews)
-    return paginate(result, page);
+    return await addThumbs(paginate(result, page));
   else
     return result;
 }
@@ -153,7 +153,7 @@ async function getFeedByTopic(topicId, page = 1) {
 async function getFeedBySearch(searchString, page = 1) {
   let result = await queryNews(searchString, page);
   if (gNews)
-    return paginate(result, page);
+    return await addThumbs(paginate(result, page));
   else
     return result;
 }
@@ -162,11 +162,11 @@ async function addThumbs(articles) {
   let imgUrl;
   return await Promise.all(articles.map(async (article, index) => {
     try {
-      if (!article.media) {
-        const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
-        imgUrl = response.data.image[0].url;
-        // console.log("Index is " + index + " URL is " + imgUrl);
-      }
+      const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
+      imgUrl = response.data.image[0].url;
+      // console.log(response.data);
+      article.description = response.data.description;
+      // console.log("Index is " + index + " URL is " + imgUrl);
     } catch (error) {
       //console.error(error);
     }
