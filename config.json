@@ -2,7 +2,7 @@
     "connectionString": "mongodb://localhost/limelight",
     "secret": "0gZ2XDiJCf3BWWjCAxw4CI2Mhd5ycQl/1xiW/YyInoj3+xVjY2xNQprXAbk8Ill569Vsr8OscVPfgzByQw/78w==",
     "newsApiKey": "4cc3c17e7aa944d5ac25f92037adba7a",
-    "facebookKey": "218349204869637|hRTLslKKLX0-gPPmKk3Rx_S7Z_c",
+    "facebookKey": "312904142704478|1SHc_oq8Hn6d-Aw5EYnqUUiLgHM",
     "numArticles": 20,
     "gNews": true
 }
