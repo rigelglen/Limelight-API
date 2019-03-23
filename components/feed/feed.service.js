@@ -21,33 +21,30 @@ module.exports = {
 async function getFeed(uid, page = 1) {
   const userObj = await User.findById(uid);
   const separator = gNews ? '|' : 'OR'
-  const topics = await Topic.find({
+  const topicNames = await Topic.find({
     "_id": {
       $in: userObj.follows
     }
-  });
-
-  const topicNames = topics.map((topic) => {
-    return topic.name;
-  });
+  }).select('name -_id');
 
   let queryString = "";
   let flag = 0;
 
   topicNames.map((topic) => {
     if (flag == 0) {
-      queryString = `${topic}`;
+      queryString = `${topic.name}`;
       flag = 1;
     }
     else {
-      queryString = `${queryString} ${separator} ${topic}`;
+      queryString = `${queryString} ${separator} ${topic.name}`;
     }
   });
+
   if (gNews) {
     let result = await queryNews(queryString, page);
     result = result.sort((a, b) => b.publishedAt - a.publishedAt);
 
-    return await addThumbs(paginate(result, page));
+    return await addMetaData(paginate(result, page));
     // return await paginate(result, page);
   }
   else {
@@ -145,7 +142,7 @@ async function getFeedByTopic(topicId, page = 1) {
   }
 
   if (gNews)
-    return await addThumbs(paginate(result, page));
+    return await addMetaData(paginate(result, page));
   else
     return result;
 }
@@ -153,24 +150,25 @@ async function getFeedByTopic(topicId, page = 1) {
 async function getFeedBySearch(searchString, page = 1) {
   let result = await queryNews(searchString, page);
   if (gNews)
-    return await addThumbs(paginate(result, page));
+    return await addMetaData(paginate(result, page));
   else
     return result;
 }
 
-async function addThumbs(articles) {
+async function addMetaData(articles) {
   let imgUrl;
-  return await Promise.all(articles.map(async (article, index) => {
+  return await Promise.all(articles.map(async (article) => {
     try {
       const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
-      imgUrl = response.data.image[0].url;
-      // console.log(response.data);
+      imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
+      article.title = response.data.title;
       article.description = response.data.description;
-      // console.log("Index is " + index + " URL is " + imgUrl);
+      article.source = response.data.site_name;
+      article.image = article.image ? article.image : imgUrl;
+
     } catch (error) {
-      //console.error(error);
+      return article;
     }
-    article.image = article.image ? article.image : imgUrl;
     return article;
   }));
 }
