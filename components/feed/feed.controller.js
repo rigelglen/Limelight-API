@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const feedService = require('../feed/feed.service');
+const ObjectId = require('mongoose').Types.ObjectId;
 
-router.get('/getFeed', getFeed);
-router.get('/getFeedByTopic', getFeedByTopic);
-router.get('/getFeedBySearch', getFeedBySearch)
+
+router.get('/getFeed', validateFeed, getFeed);
+router.get('/getFeedByTopic', validateFeed, getFeedByTopic);
+router.get('/getFeedBySearch', validateFeed, getFeedBySearch)
 
 module.exports = router;
 
@@ -26,4 +28,21 @@ function getFeedBySearch(req, res, next) {
     .catch(err => next(err));
 }
 
+function validateFeed(req, res, next) {
 
+  if (req.body.searchString && req.body.searchString.length === 0) {
+    throw 'Invalid parameter searchString';
+  }
+
+  if (req.body.topicId && !ObjectId.isValid(req.body.topicId)) {
+    throw 'Invalid parameter topicId';
+  }
+
+  if (req.body.page && !isNaN(parseInt(req.body.page)) && req.body.page > 0) {
+    req.body.page = parseInt(req.body.page);
+  }
+  else {
+    throw 'Invalid parameter page';
+  }
+  next();
+}

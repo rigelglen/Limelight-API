@@ -11,17 +11,20 @@ module.exports = {
 
 async function getFollows(uid) {
     const userFollows = await User.findById(uid);
-
-    const topics = await Topic.find({ _id: { $in: userFollows.follows } }).select('-cache');
-
-    return topics;
-
+    return await Topic.find({ _id: { $in: userFollows.follows } }).select('-cache');
 }
 
 async function addFollow(uid, topicString) {
-    const userObj = await User.findById(uid);
-    const tp = await Topic.findOne({ name: topicString });
+
+    let userObj = User.findById(uid);
+    let tp = Topic.findOne({ name: topicString });
+
+    [userObj, tp] = await Promise.all([userObj, tp]);
+
     if (tp) {
+        if (userObj.follows.indexOf(tp._id) !== -1) {
+            throw `Topic '${topicString}' is already followed`
+        }
         userObj.follows.push(tp._id);
         await userObj.save();
         return tp;

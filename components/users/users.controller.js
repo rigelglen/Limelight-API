@@ -3,8 +3,8 @@ const router = express.Router();
 const userService = require('./user.service');
 
 // routes
-router.post('/authenticate', authenticate);
-router.post('/register', register);
+router.post('/authenticate', validateAuth, authenticate);
+router.post('/register', validateAuth, register);
 router.get('/', getAll);
 router.get('/current', getCurrent);
 router.get('/:id', getById);
@@ -21,7 +21,7 @@ function authenticate(req, res, next) {
 
 function register(req, res, next) {
     userService.create(req.body)
-        .then(() => res.json({message:'User registered successfully'}))
+        .then(() => res.json({ message: 'User registered successfully' }))
         .catch(err => next(err));
 }
 
@@ -53,4 +53,13 @@ function _delete(req, res, next) {
     userService.delete(req.params.id)
         .then(() => res.json({}))
         .catch(err => next(err));
+}
+
+function validateAuth(req, res, next) {
+    if (!req.body.username || !req.body.password || req.body.username.length <= 0 || req.body.password.length <= 0) {
+        throw 'Username and Password must be provided';
+    } else if (req.body.password.length <= 5) {
+        throw 'Password must be greater than 5 characters';
+    }
+    next()
 }

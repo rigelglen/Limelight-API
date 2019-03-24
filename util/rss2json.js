@@ -1,59 +1,30 @@
 // Invoke 'strict' JavaScript mode
 'use strict';
 const util = require('util');
-const xml2js = require('xml2js');
+const xml2js = require('xml2js-es6-promise');
 const axios = require('axios');
 
 module.exports = {
-  load: function (url, callback) {
-    var $ = this;
-    axios({
-      url: url,
-      headers: {
-        accept: 'text/html,application/xhtml+xml'
-      }
-    }).then((response) => {
+  load: async function (url) {
+    try {
+      const response = await axios({
+        url: url,
+        headers: {
+          accept: 'text/html,application/xhtml+xml'
+        }
+      });
+
       if (response.status == 200) {
-        var parser = new xml2js.Parser({ trim: false, normalize: true, mergeAttrs: true });
-        parser.addListener("error", function (err) {
-          callback(err, null);
-        });
-        parser.parseString(response.data, function (err, result) {
-          callback(null, $.parser(result));
-        });
+        const result = await xml2js(response.data, { trim: false, normalize: true, mergeAttrs: true });
+        return this.parser(result);
       }
-    }).catch((error) => {
-      callback(error, null);
-    });
-
-    // request({
-    //   url: url,
-    //   headers: {
-    //     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:45.0) Gecko/20100101 Firefox/45.0',
-    //     accept: 'text/html,application/xhtml+xml'
-    //   },
-    //   pool: false,
-    //   followRedirect: true
-
-    // }, function (error, response, xml) {
-    //   if (!error && response.statusCode == 200) {
-    //     var parser = new xml2js.Parser({ trim: false, normalize: true, mergeAttrs: true });
-    //     parser.addListener("error", function (err) {
-    //       callback(err, null);
-    //     });
-    //     parser.parseString(xml, function (err, result) {
-
-    //       callback(null, $.parser(result));
-    //       //console.log(JSON.stringify(result.rss.channel));
-    //     });
-
-    //   } else {
-    //     this.emit('error', new Error('Bad status code'));
-    //   }
-    // });
+    }
+    catch (error) {
+      return error;
+    };
 
   },
-  parser: function (json) {
+  parser: (json) => {
     var channel = json.rss.channel;
     var rss = { items: [] };
     if (util.isArray(json.rss.channel))
@@ -148,9 +119,5 @@ module.exports = {
     }
     return rss;
 
-  },
-  read: function (url, callback) {
-    return this.load(url, callback);
   }
-
 };

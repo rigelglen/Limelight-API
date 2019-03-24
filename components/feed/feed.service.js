@@ -86,29 +86,24 @@ async function queryGNews(queryString, isCat) {
   const url = isCat ? `https://news.google.com/news/rss/headlines/section/topic/${queryString.toUpperCase()}` :
     `https://news.google.com/rss/search?q=${queryString}`;
 
-  return new Promise((resolve, reject) => {
-    Feed.load(url, async function (err, rss) {
-      if (err) {
-        reject(err);
+  try {
+    const rss = await Feed.load(url);
+    const result = rss.items.map((article) => {
+      return {
+        title: article.title,
+        source: article.source,
+        description: isCat ? undefined : h2p(article.description).split("\n\n")[1],
+        link: article.link,
+        image: article.media ? article.media.content[0].url[0] : undefined,
+        publishedAt: article.created
       }
-
-      const result = await Promise.all(rss.items.map(async (article) => {
-
-        return {
-          title: article.title,
-          source: article.source,
-          description: isCat ? undefined : h2p(article.description).split("\n\n")[1],
-          link: article.link,
-          image: article.media ? article.media.content[0].url[0] : undefined,
-          publishedAt: article.created
-        }
-
-      }));
-
-      resolve(result);
     });
-  });
 
+    return result;
+
+  } catch (err) {
+    return err;
+  }
 }
 
 
@@ -117,13 +112,6 @@ async function getFeedByTopic(topicId, page = 1) {
   let result;
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
-
-  try {
-    page = parseInt(page);
-  }
-  catch (e) {
-    return e;
-  }
 
   if ((lastRefreshedDate.diff(currentRefreshDate, 'hours') > 3 || !topic.cache) || (!gNews && page !== 1)) {
     result = await queryNews(topic.name, page, topic.isCat);

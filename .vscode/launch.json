@@ -8,6 +8,9 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
+      "restart": true,
+      "runtimeExecutable": "nodemon",
+      "console": "integratedTerminal",
       "program": "${workspaceFolder}\\server.js"
     }
   ]

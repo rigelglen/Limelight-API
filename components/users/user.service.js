@@ -36,16 +36,14 @@ async function getById(id) {
 async function create(userParam) {
     // validate
     if (await User.findOne({ username: userParam.username })) {
-        throw 'Username "' + userParam.username + '" is already taken';
+        throw `Username '${userParam.username}' is already taken`;
     }
 
     const user = new User(userParam);
 
     // hash password
     if (userParam.password) {
-        user.hash = bcrypt.hashSync(userParam.password, 10);
-    } else {
-        throw 'Password is required';
+        user.hash = await bcrypt.hash(userParam.password, 10);
     }
 
     // save user
