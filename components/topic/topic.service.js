@@ -46,12 +46,12 @@ async function removeFollow(uid, tid) {
     const userObj = await User.findById(uid);
 
     if (userObj.follows.indexOf(tid) === -1) {
-        return userObj.follows;
+        throw 'You are not following this topic';
     }
     else {
         const index = userObj.follows.indexOf(tid)
         userObj.follows.splice(index, 1);
         await userObj.save();
     }
-    return userObj.follows;
+    return {deletedFollow: tid, currentFollows:userObj.follows};
 }
