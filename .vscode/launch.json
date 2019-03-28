@@ -11,7 +11,7 @@
       "restart": true,
       "runtimeExecutable": "nodemon",
       "console": "integratedTerminal",
-      "program": "${workspaceFolder}\\server.js"
+      "program": "${workspaceFolder}\\api\\server.js"
     }
   ]
 }
