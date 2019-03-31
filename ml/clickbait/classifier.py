@@ -31,6 +31,8 @@ class _Classifier:
             vectorizerFile = open('./vectorizer.tfidf', 'rb')
             self.clf = pickle.load(modelFile)
             self.vectorizer = pickle.load(vectorizerFile)
+            modelFile.close()
+            vectorizerFile.close()
         except:
             self.clf, self.vectorizer = train()
 
