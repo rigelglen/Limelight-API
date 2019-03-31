@@ -9,6 +9,7 @@
       "request": "launch",
       "name": "Launch Program",
       "restart": true,
+      "cwd": "${workspaceFolder}\\api",
       "runtimeExecutable": "nodemon",
       "console": "integratedTerminal",
       "program": "${workspaceFolder}\\api\\server.js"

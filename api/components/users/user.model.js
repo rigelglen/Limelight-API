@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const Topic = db.Topic;
 
 const schema = new Schema({
-    username: { type: String, unique: true, required: true },
+    email: { type: String, unique: true, required: true },
     hash: { type: String, required: true },
     firstName: { type: String, required: false },
     lastName: { type: String, required: false },
