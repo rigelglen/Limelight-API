@@ -49,7 +49,6 @@ async function getFeed(uid, page = 1) {
   }
 }
 
-
 async function queryNews(queryString, page, isCat = false) {
   if (gNews) {
     return await queryGNews(queryString, isCat);
@@ -83,8 +82,11 @@ async function queryNewsApi(queryString, page) {
 }
 
 async function queryGNews(queryString, isCat) {
-  const url = isCat ? `https://news.google.com/news/rss/headlines/section/topic/${queryString.toUpperCase()}` :
-    `https://news.google.com/rss/search?q=${queryString}`;
+  let url = "https://news.google.com/rss";
+  if (queryString.length > 0)
+    url = isCat ? `https://news.google.com/news/rss/headlines/section/topic/${queryString.toUpperCase()}` :
+      `https://news.google.com/rss/search?q=${queryString}`;
+
 
   try {
     const rss = await Feed.load(url);
