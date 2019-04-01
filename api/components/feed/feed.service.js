@@ -11,6 +11,7 @@ const numArticles = require('config.json').numArticles;
 const gNews = require('config.json').gNews;
 const facebookKey = process.env.facebookKey || require('config.json').facebookKey;
 const axios = require('axios');
+const grabity = require('grabity');
 
 module.exports = {
   getFeed,
@@ -141,6 +142,23 @@ async function getFeedBySearch(searchString, page = 1) {
   else
     return result;
 }
+
+// async function addMetaData(articles) {
+//   let imgUrl;
+//   return await Promise.all(articles.map(async (article) => {
+//     try {
+//       const response = await grabity.grabIt(`${article.link}`);
+//       imgUrl = response.image;
+//       article.title = response.title;
+//       article.description = response.description;
+//       // article.source = response.data.site_name;
+//       article.image = article.image ? article.image : imgUrl;
+//     } catch (error) {
+//       return article;
+//     }
+//     return article;
+//   }));
+// }
 
 async function addMetaData(articles) {
   let imgUrl;
