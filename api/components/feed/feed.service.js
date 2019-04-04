@@ -1,15 +1,15 @@
-const db = require('core/db');
+const db = require('./../../core/db');
 const Topic = db.Topic;
 const User = db.User;
 const moment = require('moment');
-const newsApiKey = process.env.newsApiKey || require('config.json').newsApiKey;
+const newsApiKey = process.env.NEWS_API_KEY;
 const NewsAPI = require('newsapi');
 const newsapi = new NewsAPI(newsApiKey);
-const Feed = require('util/rss2json');
+const Feed = require('./../../util/rss2json');
 const h2p = require('html2plaintext');
-const numArticles = require('config.json').numArticles;
-const gNews = require('config.json').gNews;
-const facebookKey = process.env.facebookKey || require('config.json').facebookKey;
+const numArticles = process.env.NUM_ARTICLES;
+const gNews = process.env.GNEWS;
+const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
 const grabity = require('grabity');
 
@@ -41,9 +41,8 @@ async function getFeed(uid, page = 1) {
 
   let result = await queryNews(queryString, page);
 
-
   if (gNews) {
-    return await addMetaData(paginate(result, page));
+    return await paginate(result, page);
   }
   else {
     return result;
@@ -112,7 +111,10 @@ async function queryGNews(queryString, isCat) {
 
 async function getFeedByTopic(topicId, page = 1) {
   const topic = await Topic.findById(topicId);
+  if (!topic)
+    throw 'Topic not found';
   let result;
+
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
 

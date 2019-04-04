@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
-const db = require('core/db');
-const uniqueArrayPlugin = require('mongoose-unique-array');
+const _ = require('lodash');
 
 const Schema = mongoose.Schema;
-const Topic = db.Topic;
 
 const schema = new Schema({
     email: { type: String, unique: true, required: true },
@@ -11,10 +9,16 @@ const schema = new Schema({
     firstName: { type: String, required: false },
     lastName: { type: String, required: false },
     createdDate: { type: Date, default: Date.now },
-    follows: [{ type: Schema.ObjectId, unique: true }]
+    follows: [{ type: Schema.ObjectId }]
 });
 
-schema.plugin(uniqueArrayPlugin);
+schema.pre('save', function (next) {
+    let sample = this;
+    sample.follows = _.uniq(sample.follows, function (i) { return (i._id) ? i._id.toString() : i; });
+    next();
+});
+
+// schema.plugin(uniqueArrayPlugin);
 
 schema.set('toJSON', { virtuals: true });
 

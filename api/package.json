@@ -8,19 +8,22 @@
         "url": "https://gitlab.com/mirandajyothy/limelight_api.git"
     },
     "scripts": {
-        "start": "nodemon ./server.js",
-        "start-dev": "nodemon ./server.js"
+        "start": "nodemon ./index.js",
+        "test": "jest --verbose -i",
+        "start-dev": "nodemon ./index.js"
     },
     "dependencies": {
         "axios": "^0.18.0",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.18.3",
         "cors": "^2.8.5",
+        "dotenv": "^7.0.0",
         "express": "^4.16.4",
         "express-jwt": "^5.3.1",
         "grabity": "^1.0.5",
         "html2plaintext": "^2.1.2",
         "jsonwebtoken": "^8.5.1",
+        "lodash": "^4.17.11",
         "moment": "^2.24.0",
         "mongoose": "^5.4.19",
         "mongoose-unique-array": "^0.3.1",
@@ -29,6 +32,8 @@
         "xml2js-es6-promise": "^1.1.1"
     },
     "devDependencies": {
-        "nodemon": "^1.18.10"
+        "jest": "^24.7.1",
+        "nodemon": "^1.18.10",
+        "supertest": "^4.0.2"
     }
 }

@@ -1,4 +1,4 @@
-const db = require('core/db');
+const db = require('./../../core/db');
 const Topic = db.Topic;
 const User = db.User;
 
@@ -15,7 +15,7 @@ async function getFollows(uid) {
 }
 
 async function addFollow(uid, topicString) {
-
+    topicString = topicString.trim().toLowerCase();
     let userObj = User.findById(uid);
     let tp = Topic.findOne({ name: topicString });
 
@@ -53,5 +53,5 @@ async function removeFollow(uid, tid) {
         userObj.follows.splice(index, 1);
         await userObj.save();
     }
-    return {deletedFollow: tid, currentFollows:userObj.follows};
+    return { deletedFollow: tid, currentFollows: userObj.follows };
 }
