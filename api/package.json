@@ -16,6 +16,7 @@
         "axios": "^0.18.0",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.18.3",
+        "compromise": "^11.13.2",
         "cors": "^2.8.5",
         "dotenv": "^7.0.0",
         "express": "^4.16.4",
@@ -28,6 +29,7 @@
         "mongoose": "^5.4.22",
         "mongoose-unique-array": "^0.3.1",
         "newsapi": "^2.4.0",
+        "rake-js": "^0.1.1",
         "rootpath": "^0.1.2",
         "xml2js-es6-promise": "^1.1.1"
     },

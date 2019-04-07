@@ -1,11 +1,11 @@
 const express = require('express');
 const mlService = require('./ml.service');
 const router = express.Router();
-const validUrl = require('valid-url');
 
 
 router.get('/checkClickbait', validateUrl, getClickbait);
 router.get('/checkSentiment', validateUrl, getSentiment);
+router.get('/getKeywords', getKeywords);
 
 module.exports = router;
 
@@ -17,6 +17,12 @@ function getClickbait(req, res, next) {
 
 function getSentiment(req, res, next) {
   mlService.getSentiment(addHttp(req.query.url))
+    .then(data => data ? res.json(data) : res.status(400).json({ message: 'An error occured.' }))
+    .catch(err => next(err));
+}
+
+function getKeywords(req, res, next) {
+  mlService.getKeywords(req.query.text)
     .then(data => data ? res.json(data) : res.status(400).json({ message: 'An error occured.' }))
     .catch(err => next(err));
 }

@@ -7,6 +7,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 router.get('/getFeed', validateFeed, getFeed);
 router.get('/getFeedByTopic', validateFeed, getFeedByTopic);
 router.get('/getFeedBySearch', validateFeed, getFeedBySearch)
+router.get('/getFeedByCategory', validateFeed, getFeedByCategory)
 
 module.exports = router;
 
@@ -24,6 +25,12 @@ function getFeedByTopic(req, res, next) {
 
 function getFeedBySearch(req, res, next) {
   feedService.getFeedBySearch(req.query.searchString, req.query.page)
+    .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
+    .catch(err => next(err));
+}
+
+function getFeedByCategory(req, res, next) {
+  feedService.getFeedByCategory(req.query.searchString, req.query.page)
     .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
     .catch(err => next(err));
 }

@@ -16,7 +16,8 @@ const axios = require('axios');
 module.exports = {
   getFeed,
   getFeedByTopic,
-  getFeedBySearch
+  getFeedBySearch,
+  getFeedByCategory
 };
 
 async function getFeed(uid, page = 1) {
@@ -56,6 +57,14 @@ async function queryNews(queryString, page, isCat = false) {
   else {
     return await queryNewsApi(queryString, page);
   }
+}
+
+async function getFeedByCategory(categoryName, page) {
+  const news = await queryNews(categoryName, page, true);
+  if (news.length)
+    return news;
+  else
+    throw 'Invalid category';
 }
 
 
