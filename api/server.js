@@ -14,7 +14,6 @@ app.use(cors());
 // use JWT auth to secure the api
 app.use(jwt());
 
-var a = 3;
 // api routes
 
 app.use('/users', require('./components/users/users.controller'));

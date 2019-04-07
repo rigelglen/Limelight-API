@@ -9,7 +9,7 @@
     },
     "scripts": {
         "start": "nodemon ./index.js",
-        "test": "concurrently --kill-others-on-fail \"jest --verbose -i\" \"python ../ml/app.py\"",
+        "test": "concurrently --kill-others-on-fail \"python ../ml/app.py\" \"jest --verbose -i\"",
         "start-dev": "nodemon ./index.js"
     },
     "dependencies": {

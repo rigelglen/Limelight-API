@@ -5,6 +5,9 @@ const { mongoose } = require('./../../core/db');
 
 var agent = request.agent(app);
 
+beforeAll(populateUsers);
+beforeAll(populateTopics);
+
 describe('Machine Learning', () => {
 
   beforeAll(() => {
@@ -128,7 +131,7 @@ describe('Machine Learning', () => {
 
   describe('GET /ml/getKeywords', () => {
 
-    test(`it should return a sentiment array based on title`, (done) => {
+    test(`it should return a keyword array based on title`, (done) => {
       const text = `Are pandas extinct`;
 
       agent
@@ -145,7 +148,7 @@ describe('Machine Learning', () => {
         });
     });
 
-    test(`it should return the same word if only one word is sent`, (done) => {
+    test(`it should return the same keyword if only one word is sent`, (done) => {
       const text = `Panda`;
 
       agent
