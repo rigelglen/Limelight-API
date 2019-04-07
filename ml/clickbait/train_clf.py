@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import SVC
 import pickle
 import pandas as pd
+import os.path as path
 
 nltk.download('averaged_perceptron_tagger')
 
@@ -27,12 +28,15 @@ TRAIN_ON_PARTS_OF_SPEECH = True
 
 
 def train():
+    cwd = path.join(path.dirname(__file__), 'data/pos/*.json')
     # Make this `True` to train on parts of speech instead of words.
     TRAIN_ON_PARTS_OF_SPEECH = True
     if TRAIN_ON_PARTS_OF_SPEECH:
-        data_files = glob.glob('./clickbait/data/pos/*.json')
+        cwd = path.join(path.dirname(__file__), 'data/pos/*.json')
+        data_files = glob.glob(cwd)
     else:
-        data_files = glob.glob('./clickbait/data/*.json')
+        cwd = path.join(path.dirname(__file__), 'data/data/*.json')
+        data_files = glob.glob(cwd)
 
     # All of these complicated splits are used to ensure that there are both types
     # of article titles (clickbait and news) in the training set.
@@ -83,12 +87,12 @@ def train():
     print(metrics.classification_report(Y_test, Y_predicted))
     print('')
 
-    modelFile = './clickbait/model.svm'
+    modelFile = path.join(path.dirname(__file__), "model.svm")
     outfile = open(modelFile, 'wb')
     pickle.dump(clf, outfile)
     outfile.close()
 
-    vectorizerFile = './clickbait/vectorizer.tfidf'
+    vectorizerFile = path.join(path.dirname(__file__), "vectorizer.tfidf")
     outfile = open(vectorizerFile, 'wb')
     pickle.dump(vectorizer, outfile)
     outfile.close()
