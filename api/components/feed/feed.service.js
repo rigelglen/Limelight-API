@@ -11,7 +11,7 @@ const numArticles = process.env.NUM_ARTICLES;
 const gNews = process.env.GNEWS;
 const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
-const grabity = require('grabity');
+// const grabity = require('grabity');
 
 module.exports = {
   getFeed,

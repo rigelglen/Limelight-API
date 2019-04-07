@@ -23,7 +23,7 @@ def clickbait():
     if(res == False):
         return make_response(jsonify(message="Could not fetch the article"), 400)
     print(res)
-    return jsonify(**res)
+    return jsonify(res)
 
 
 @app.route('/sentiment')
@@ -37,7 +37,7 @@ def sentiment():
     if(res == False):
         return make_response(jsonify(message="Could not fetch the article"), 400)
     # print(res)
-    return jsonify(**res)
+    return jsonify(res)
 
 
 if __name__ == '__main__':

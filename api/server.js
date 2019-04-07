@@ -20,6 +20,7 @@ var a = 3;
 app.use('/users', require('./components/users/users.controller'));
 app.use('/topic', require('./components/topic/topic.controller'));
 app.use('/feed', require('./components/feed/feed.controller'));
+app.use('/ml', require('./components/ml/ml.controller'));
 
 // global error handler
 app.use(errorHandler);

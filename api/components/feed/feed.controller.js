@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const feedService = require('../feed/feed.service');
+const feedService = require('./feed.service');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 
