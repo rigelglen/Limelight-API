@@ -1,14 +1,10 @@
 import glob
 import json
 import numpy as np
-import sys
 import nltk
 from operator import itemgetter
-from random import shuffle
 from sklearn import metrics
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 import pickle
 import pandas as pd
@@ -87,12 +83,12 @@ def train():
     print(metrics.classification_report(Y_test, Y_predicted))
     print('')
 
-    modelFile = 'model.svm'
+    modelFile = './clickbait/model.svm'
     outfile = open(modelFile, 'wb')
     pickle.dump(clf, outfile)
     outfile.close()
 
-    vectorizerFile = 'vectorizer.tfidf'
+    vectorizerFile = './clickbait/vectorizer.tfidf'
     outfile = open(vectorizerFile, 'wb')
     pickle.dump(vectorizer, outfile)
     outfile.close()

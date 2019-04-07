@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify, make_response
 from clickbait import classifier
+from sentiment import sentiment as senti
+from util import article_util
+
 import urllib3
 app = Flask(__name__)
 
@@ -15,7 +18,22 @@ def clickbait():
         return make_response(jsonify(message="Please pass a url"), 400)
 
     url = request.args.get('url')
-    res = classifier.get_classifier().classify(url)
+    title, _ = article_util.get_article(url)
+    res = classifier.get_classifier().classify(title)
+    if(res == False):
+        return make_response(jsonify(message="Could not fetch the article"), 400)
+    print(res)
+    return jsonify(**res)
+
+
+@app.route('/sentiment')
+def sentiment():
+    if 'url' not in request.args:
+        return make_response(jsonify(message="Please pass a url"), 400)
+
+    url = request.args.get('url')
+    _, text = article_util.get_article(url)
+    res = senti.sentiment_analyzer_scores(text)
     if(res == False):
         return make_response(jsonify(message="Could not fetch the article"), 400)
     # print(res)
@@ -23,4 +41,4 @@ def clickbait():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port='4202')
+    app.run(debug=True, host='localhost', port='4202')

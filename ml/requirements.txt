@@ -5,3 +5,4 @@ sklearn
 newspaper3k
 lxml
 pandas
+vaderSentiment
