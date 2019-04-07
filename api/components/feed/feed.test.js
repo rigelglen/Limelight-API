@@ -36,7 +36,7 @@ describe('Feed', () => {
                 });
         });
 
-        test(`it should get the feed when user is follwing some topics`, (done) => {
+        test(`it should get the feed when user is following some topics`, (done) => {
             agent
                 .get('/feed/getFeed')
                 .query({ page: 1 })
@@ -117,4 +117,97 @@ describe('Feed', () => {
         });
 
     });
+
+    describe('GET /feed/getFeedBySearch', () => {
+
+        test(`it should get the feed for a query`, (done) => {
+            const searchString = "tech";
+            agent
+                .get('/feed/getFeedBySearch')
+                .query({ page: 1, searchString })
+                .set('Content-Type', 'application/json')
+                .set('Accept', 'application/json')
+                .set("Authorization", `Bearer ${userJwts[0]}`)
+                .expect(200)
+                .then((res) => done())
+                .catch(err => {
+                    console.log(err);
+                    done(err)
+                });
+        });
+
+        test(`it should get the second page of the search feed`, (done) => {
+            const searchString = "tech";
+
+            agent
+                .get('/feed/getFeedBySearch')
+                .query({ page: 2, searchString })
+                .set('Content-Type', 'application/json')
+                .set('Accept', 'application/json')
+                .set("Authorization", `Bearer ${userJwts[0]}`)
+                .expect(200)
+                .then((res) => done())
+                .catch(err => {
+                    console.log(err);
+                    done(err)
+                });
+        });
+
+    });
+
+    describe('GET /feed/getFeedByCategory', () => {
+
+        test(`it should get the feed for a category string`, (done) => {
+            const searchString = "business";
+            agent
+                .get('/feed/getFeedByCategory')
+                .query({ page: 1, searchString })
+                .set('Content-Type', 'application/json')
+                .set('Accept', 'application/json')
+                .set("Authorization", `Bearer ${userJwts[0]}`)
+                .expect(200)
+                .then((res) => done())
+                .catch(err => {
+                    console.log(err);
+                    done(err)
+                });
+        });
+
+        test(`it should get the second page of the category string`, (done) => {
+            const searchString = "business";
+
+            agent
+                .get('/feed/getFeedByCategory')
+                .query({ page: 2, searchString })
+                .set('Content-Type', 'application/json')
+                .set('Accept', 'application/json')
+                .set("Authorization", `Bearer ${userJwts[0]}`)
+                .expect(200)
+                .then((res) => done())
+                .catch(err => {
+                    console.log(err);
+                    done(err)
+                });
+        });
+
+        test(`it should give an error when string is not a category`, (done) => {
+            const searchString = "tech";
+
+            agent
+                .get('/feed/getFeedByCategory')
+                .query({ page: 1, searchString })
+                .set('Content-Type', 'application/json')
+                .set('Accept', 'application/json')
+                .set("Authorization", `Bearer ${userJwts[0]}`)
+                .expect(400)
+                .then((res) => done())
+                .catch(err => {
+                    console.log(err);
+                    done(err)
+                });
+        });
+
+    });
+
+
 });

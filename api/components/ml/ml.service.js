@@ -36,6 +36,6 @@ async function getKeywords(text) {
       throw 'Could not fetch keywords';
     }
   } else {
-    return { keywords: text };
+    return { keywords: [text] };
   }
 }
