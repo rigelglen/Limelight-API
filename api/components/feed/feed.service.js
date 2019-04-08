@@ -59,10 +59,26 @@ async function queryNews(queryString, page, isCat = false) {
   }
 }
 
-async function getFeedByCategory(categoryName, page) {
-  const news = await queryNews(categoryName, page, true);
-  if (news.length)
-    return news;
+async function getFeedByCategory(uid, categoryName, page) {
+  let news = queryNews(categoryName, page, true);
+  let tp = Topic.findOne({ name: categoryName });
+  let userObj = User.findById(uid);
+
+  let isFollow = false;
+
+  [userObj, tp, news] = await Promise.all([userObj, tp, news]);
+
+  if (tp) {
+    if (userObj.follows.indexOf(tp._id) !== -1) {
+      isFollow = true;
+    }
+  }
+
+
+  if (news.length) {
+    news = paginate(news, page);
+    return { isFollow, articles: news };
+  }
   else
     throw 'Invalid category';
 }
@@ -149,7 +165,7 @@ async function getFeedByTopic(topicId, page = 1) {
 async function getFeedBySearch(searchString, page = 1) {
   let result = await queryNews(searchString, page);
   if (gNews)
-    return await addMetaData(paginate(result, page));
+    return await paginate(result, page);
   else
     return result;
 }

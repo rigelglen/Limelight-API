@@ -30,7 +30,7 @@ function getFeedBySearch(req, res, next) {
 }
 
 function getFeedByCategory(req, res, next) {
-  feedService.getFeedByCategory(req.query.searchString, req.query.page)
+  feedService.getFeedByCategory(req.user.sub, req.query.categoryString, req.query.page)
     .then(feed => feed ? res.json(feed) : res.status(400).json({ message: 'An error occured.' }))
     .catch(err => next(err));
 }
@@ -38,6 +38,10 @@ function getFeedByCategory(req, res, next) {
 function validateFeed(req, res, next) {
   if (req.query.searchString && req.query.searchString.length === 0) {
     throw 'Invalid parameter searchString';
+  }
+
+  if (req.query.categoryString && req.query.categoryString.length === 0) {
+    throw 'Invalid parameter categoryString';
   }
 
   if (req.query.topicId && !ObjectId.isValid(req.query.topicId)) {
