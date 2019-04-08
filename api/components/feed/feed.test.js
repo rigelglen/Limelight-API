@@ -158,10 +158,10 @@ describe('Feed', () => {
     describe('GET /feed/getFeedByCategory', () => {
 
         test(`it should get the feed for a category string`, (done) => {
-            const searchString = "business";
+            const categoryString = "business";
             agent
                 .get('/feed/getFeedByCategory')
-                .query({ page: 1, searchString })
+                .query({ page: 1, categoryString })
                 .set('Content-Type', 'application/json')
                 .set('Accept', 'application/json')
                 .set("Authorization", `Bearer ${userJwts[0]}`)
@@ -174,11 +174,11 @@ describe('Feed', () => {
         });
 
         test(`it should get the second page of the category string`, (done) => {
-            const searchString = "business";
+            const categoryString = "business";
 
             agent
                 .get('/feed/getFeedByCategory')
-                .query({ page: 2, searchString })
+                .query({ page: 2, categoryString })
                 .set('Content-Type', 'application/json')
                 .set('Accept', 'application/json')
                 .set("Authorization", `Bearer ${userJwts[0]}`)
@@ -191,11 +191,11 @@ describe('Feed', () => {
         });
 
         test(`it should give an error when string is not a category`, (done) => {
-            const searchString = "tech";
+            const categoryString = "tech";
 
             agent
                 .get('/feed/getFeedByCategory')
-                .query({ page: 1, searchString })
+                .query({ page: 1, categoryString })
                 .set('Content-Type', 'application/json')
                 .set('Accept', 'application/json')
                 .set("Authorization", `Bearer ${userJwts[0]}`)

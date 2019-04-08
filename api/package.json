@@ -30,7 +30,6 @@
         "mongoose": "^5.4.22",
         "mongoose-unique-array": "^0.3.1",
         "newsapi": "^2.4.0",
-        "rake-js": "^0.1.1",
         "rootpath": "^0.1.2",
         "xml2js-es6-promise": "^1.1.1"
     },
