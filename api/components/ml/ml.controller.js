@@ -6,6 +6,7 @@ const router = express.Router();
 router.get('/checkClickbait', validateUrl, getClickbait);
 router.get('/checkSentiment', validateUrl, getSentiment);
 router.get('/getKeywords', getKeywords);
+router.get('/getClassification', validateUrl, getClassification);
 
 module.exports = router;
 
@@ -23,6 +24,12 @@ function getSentiment(req, res, next) {
 
 function getKeywords(req, res, next) {
   mlService.getKeywords(req.query.text)
+    .then(data => data ? res.json(data) : res.status(400).json({ message: 'An error occured.' }))
+    .catch(err => next(err));
+}
+
+function getClassification(req, res, next) {
+  mlService.getClassification(addHttp(req.query.url))
     .then(data => data ? res.json(data) : res.status(400).json({ message: 'An error occured.' }))
     .catch(err => next(err));
 }

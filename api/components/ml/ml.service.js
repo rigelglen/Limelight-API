@@ -1,11 +1,10 @@
 const axios = require('axios');
-const nlp = require('compromise');
-const rake = require('rake-js')
 
 module.exports = {
   getSentiment,
   getClickbait,
-  getKeywords
+  getKeywords,
+  getClassification
 };
 
 
@@ -22,6 +21,26 @@ async function getSentiment(url) {
   try {
     const response = await axios.get(`${process.env.FLASK_URI}:${process.env.FLASK_PORT}/sentiment`, { params: { url } });
     return { compound: response.data.compound, negative: response.data.neg, positive: response.data.pos, neutral: response.data.neu };
+  } catch (e) {
+    throw 'Could not fetch report';
+  }
+}
+
+async function getClassification(url) {
+  try {
+    const response = await axios.get(`${process.env.FLASK_URI}:${process.env.FLASK_PORT}/classify`, { params: { url } });
+    return {
+      clickbait: {
+        clickbait: response.data.clickbait.clickbait * 100,
+        news: response.data.clickbait.news * 100
+      },
+      sentiment: {
+        compound: response.data.sentiment.compound * 100,
+        negative: response.data.sentiment.neg * 100,
+        positive: response.data.sentiment.pos * 100,
+        neutral: response.data.sentiment.neu * 100
+      }
+    };
   } catch (e) {
     throw 'Could not fetch report';
   }

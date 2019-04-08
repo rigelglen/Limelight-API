@@ -13,6 +13,23 @@ def hello_world():
     return 'Flask!'
 
 
+@app.route('/classify')
+def classify():
+    if 'url' not in request.args:
+        return make_response(jsonify(message="Please pass a url"), 400)
+
+    url = request.args.get('url')
+    title, text = article_util.get_article(url)
+    resClickBait = classifier.get_classifier().classify(title)
+    if(resClickBait == False):
+        return make_response(jsonify(message="Could not fetch the article"), 400)
+
+    resSenti = senti.sentiment_analyzer_scores(text)
+
+    res = {"clickbait": resClickBait, "sentiment": resSenti}
+    return jsonify(res)
+
+
 @app.route('/clickbait')
 def clickbait():
     if 'url' not in request.args:
