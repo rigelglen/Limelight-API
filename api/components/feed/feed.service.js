@@ -74,10 +74,9 @@ async function getFeedByCategory(uid, categoryName, page) {
     }
   }
 
-
-  if (news.length) {
+  if (news.length && tp) {
     news = paginate(news, page);
-    return { isFollow, articles: news };
+    return { isFollow, id: tp._id, articles: news };
   }
   else
     throw 'Invalid category';
