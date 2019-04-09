@@ -60,6 +60,7 @@ async function queryNews(queryString, page, isCat = false) {
 }
 
 async function getFeedByCategory(uid, categoryName, page) {
+  categoryName = categoryName.trim().toLowerCase();
   let news = queryNews(categoryName, page, true);
   let tp = Topic.findOne({ name: categoryName });
   let userObj = User.findById(uid);

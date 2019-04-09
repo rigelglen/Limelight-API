@@ -11,7 +11,11 @@ module.exports = {
 
 async function getFollows(uid) {
     const userFollows = await User.findById(uid);
-    return await Topic.find({ _id: { $in: userFollows.follows } }).select('-cache');
+    const follows = await Topic.find({ _id: { $in: userFollows.follows } }).select('-cache');
+    return follows.map((follow) => {
+        return { ...follow, name: follow.name.charAt(0).toUpperCase() + follow.name.slice(1) }
+    })
+
 }
 
 async function addFollow(uid, topicString) {
