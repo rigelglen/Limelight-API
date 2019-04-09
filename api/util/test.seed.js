@@ -1,5 +1,6 @@
 const { ObjectID } = require('mongodb');
-require('dotenv').config()
+require('dotenv').config({ path: __dirname + '/./../../.env' })
+
 const jwt = require('jsonwebtoken');
 const User = require('./../components/users/user.model');
 const Topic = require('./../components/topic/topic.model');
