@@ -4,11 +4,15 @@ const Topic = require('./../components/topic/topic.model');
 
 mongoose.Promise = global.Promise;
 
-if (process.env.NODE_ENV == 'test')
-    mongoose.connect(process.env.MONGODB_TEST_URI, { useCreateIndex: true, useNewUrlParser: true });
-else
-    mongoose.connect(process.env.MONGODB_URI, { useCreateIndex: true, useNewUrlParser: true });
-
+if (process.env.NODE_ENV == 'test') {
+    let url = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_HOST}/${process.env.MONGODB_DB_TEST}?authSource=admin`;
+    mongoose.connect(url, { useCreateIndex: true, useNewUrlParser: true });
+}
+else {
+    let url = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_HOST}/${process.env.MONGODB_DB}?authSource=admin`;
+    console.log(url);
+    mongoose.connect(url, { useCreateIndex: true, useNewUrlParser: true });
+}
 module.exports = {
     User,
     Topic,

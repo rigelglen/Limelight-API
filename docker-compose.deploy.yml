@@ -1,0 +1,65 @@
+version: "3"
+services:
+
+  pyml:
+    container_name: pyml
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=production
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    networks:
+      - mainnet
+
+  app:
+    container_name: api
+    restart: unless-stopped
+    env_file:
+      - .env
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "80:8080"
+    networks:
+      - mainnet
+    depends_on:
+      - mongo
+      - pyml
+      
+  mongo:
+    container_name: mongo
+    image: mongo:4.1
+    env_file:
+      - .env
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodata
+    networks:
+      - mainnet
+
+  app-test:
+    container_name: api-test
+    command: npm test
+    restart: "no"
+    env_file:
+      - .env
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    networks:
+      - mainnet
+    depends_on:
+      - mongo
+      - pyml
+
+networks:
+  mainnet:
+
+volumes:
+  mongodata:    
+  

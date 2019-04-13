@@ -1,4 +1,4 @@
-﻿const secret = process.env.SECRET;
+﻿const secret = process.env.JWT_SECRET;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('./../../core/db');

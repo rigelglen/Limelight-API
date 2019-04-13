@@ -8,7 +8,8 @@ const newsapi = new NewsAPI(newsApiKey);
 const Feed = require('./../../util/rss2json');
 const h2p = require('html2plaintext');
 const numArticles = process.env.NUM_ARTICLES;
-const gNews = process.env.GNEWS;
+const gNews = process.env.GNEWS === 'true';
+const fbThumb = process.env.FB_THUMB === 'true';
 const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
 // const grabity = require('grabity');
@@ -43,7 +44,13 @@ async function getFeed(uid, page = 1) {
   let result = await queryNews(queryString, page);
 
   if (gNews) {
-    return await paginate(result, page);
+    if (fbThumb) {
+      console.log('adding metadata')
+      return await addMetaData(paginate(result, page));
+    }
+    else {
+      return await paginate(result, page);
+    }
   }
   else {
     return result;
@@ -76,7 +83,10 @@ async function getFeedByCategory(uid, categoryName, page) {
   }
 
   if (news.length && tp) {
-    news = paginate(news, page);
+    if (fbThumb)
+      news = await addMetaData(paginate(news, page));
+    else
+      news = paginate(news, page);
     return { isFollow, id: tp._id, articles: news };
   }
   else
@@ -156,16 +166,25 @@ async function getFeedByTopic(topicId, page = 1) {
     result = topic.cache;
   }
 
-  if (gNews)
-    return await addMetaData(paginate(result, page));
-  else
+  if (gNews) {
+    if (fbThumb)
+      return await addMetaData(paginate(result, page));
+    else
+      return await paginate(result, page);
+  }
+  else {
     return result;
+  }
 }
 
 async function getFeedBySearch(searchString, page = 1) {
   let result = await queryNews(searchString, page);
-  if (gNews)
-    return await paginate(result, page);
+  if (gNews) {
+    if (fbThumb)
+      return await addMetaData(paginate(result, page));
+    else
+      return await paginate(result, page);
+  }
   else
     return result;
 }
@@ -209,11 +228,13 @@ async function addMetaData(articles) {
 function paginate(data, page) {
   const startIndex = (page - 1) * numArticles;
   const endIndex = page * numArticles;
-
-  if (endIndex < data.length)
-    data = data.slice(startIndex, endIndex);
-  else
-    data = data.slice(startIndex, data.length - 1);
-
+  try {
+    if (endIndex < data.length)
+      data = data.slice(startIndex, endIndex);
+    else
+      data = data.slice(startIndex, data.length - 1);
+  } catch (error) {
+    return [];
+  }
   return data;
 }

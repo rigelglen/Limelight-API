@@ -25,7 +25,8 @@ const users = [
         follows: [topicOneId]
     }
 ];
-const secret = process.env.SECRET;
+
+const secret = process.env.JWT_SECRET;
 const userJwts = [jwt.sign({ sub: users[0]._id }, secret), jwt.sign({ sub: users[1]._id }, secret)]
 
 const topics = [{

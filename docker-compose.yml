@@ -1,0 +1,74 @@
+version: "3"
+services:
+
+  pyml:
+    container_name: pyml
+    restart: unless-stopped
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_pyml:latest
+    env_file:
+      - .env
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    networks:
+      - mainnet
+    volumes:
+      - ./ml:/usr/app/
+
+  app:
+    container_name: api
+    restart: unless-stopped
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app:latest
+    env_file:
+      - .env
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - mainnet
+    volumes:
+      - ./api:/usr/app/
+      - /usr/app/node_modules
+    depends_on:
+      - mongo
+      - pyml
+      
+  mongo:
+    container_name: mongo
+    image: mongo:4.1
+    env_file:
+      - .env
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodata
+    networks:
+      - mainnet
+
+  app-test:
+    container_name: api-test
+    command: npm test
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
+    restart: "no"
+    env_file:
+      - .env
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    networks:
+      - mainnet
+    volumes:
+      - ./api:/usr/app/
+      - /usr/app/node_modules
+    depends_on:
+      - mongo
+      - pyml
+
+networks:
+  mainnet:
+
+volumes:
+  mongodata:    
+  

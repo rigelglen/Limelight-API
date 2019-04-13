@@ -1,5 +1,5 @@
 const expressJwt = require('express-jwt');
-const secret = process.env.SECRET;
+const secret = process.env.JWT_SECRET;
 const userService = require('../components/users/user.service');
 
 module.exports = jwt;

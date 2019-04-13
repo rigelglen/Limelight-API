@@ -3,7 +3,7 @@ from clickbait import classifier
 from sentiment import sentiment as senti
 from util import article_util
 from keywords import keywords as key
-
+import os
 import urllib3
 app = Flask(__name__)
 
@@ -66,5 +66,8 @@ def keywords():
     return jsonify(key.get_keywords(text))
 
 
+port = int(os.getenv('FLASK_PORT'))
+print(port)
 if __name__ == '__main__':
-    app.run(debug=True, host='localhost', port='4202')
+    app.run(debug=True, host=os.getenv('FLASK_HOST'),
+            port=port)
