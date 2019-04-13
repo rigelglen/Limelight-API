@@ -10,7 +10,6 @@ if (process.env.NODE_ENV == 'test') {
 }
 else {
     let url = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_HOST}/${process.env.MONGODB_DB}?authSource=admin`;
-    console.log(url);
     mongoose.connect(url, { useCreateIndex: true, useNewUrlParser: true });
 }
 module.exports = {
