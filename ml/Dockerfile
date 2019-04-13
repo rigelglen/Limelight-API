@@ -1,4 +1,4 @@
-FROM python:3.7.3-alpine
+FROM conda/miniconda3:latest
 
 # Create app folder
 RUN mkdir -p /usr/app
