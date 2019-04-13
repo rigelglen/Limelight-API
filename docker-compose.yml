@@ -43,7 +43,7 @@ services:
     ports:
       - "27018:27017"
     volumes:
-      - mongodata
+      - mongodata:/data/db
     networks:
       - mainnet
 
