@@ -6,6 +6,12 @@ do
     sleep 1
 done
 
+until nc -z $FLASK_HOST $FLASK_PORT
+do
+    echo "Waiting for Flask ($FLASK_HOST:$FLASK_PORT) to start..."
+    sleep 1
+done
+
 if [ $APP_ENV = "production" ]; then
   node index.js;
 else

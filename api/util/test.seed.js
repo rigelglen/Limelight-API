@@ -74,7 +74,6 @@ const categories = [{
 }];
 
 
-
 const populateUsers = (done) => {
     User.deleteMany({}).then(() => {
         let userOne = new User(users[0]).save();
@@ -87,12 +86,12 @@ const populateTopics = (done) => {
     Topic.deleteMany({}).then(() => {
         let topicOne = new Topic(topics[0]).save()
         let topicTwo = new Topic(topics[1]).save();
-        let categoriesPromise = Topic.insertMany(categories);
+        let categoriesPromise = Topic.insertMany(categories, { ordered: false });
 
         return Promise.all([topicOne, topicTwo, categoriesPromise]);
     }).then(() => done());
 };
 
-module.exports = { populateUsers, populateTopics, topics, users, userJwts };
+module.exports = { populateUsers, populateTopics, topics, users, userJwts, categories};
 
 
