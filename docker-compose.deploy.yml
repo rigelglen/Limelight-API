@@ -8,9 +8,7 @@ services:
       - .env
     environment:
       - APP_ENV=production
-    build:
-      context: ./ml
-      dockerfile: Dockerfile
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_pyml:latest
     networks:
       - mainnet
 
@@ -19,9 +17,7 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    build:
-      context: ./api
-      dockerfile: Dockerfile
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app:latest
     ports:
       - "80:8080"
     networks:
@@ -48,9 +44,7 @@ services:
     restart: "no"
     env_file:
       - .env
-    build:
-      context: ./api
-      dockerfile: Dockerfile
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
     networks:
       - mainnet
     depends_on:
