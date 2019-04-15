@@ -27,7 +27,22 @@ services:
     depends_on:
       - mongo
       - pyml
+      - redis
       
+  app-test:
+    container_name: api-test
+    command: npm test
+    restart: "no"
+    env_file:
+      - .env
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
+    networks:
+      - mainnet
+    depends_on:
+      - mongo
+      - pyml
+      - redis
+  
   mongo:
     container_name: mongo
     restart: unless-stopped
@@ -41,22 +56,23 @@ services:
     networks:
       - mainnet
 
-  app-test:
-    container_name: api-test
-    command: npm test
-    restart: "no"
+  redis:
+    container_name: redis
+    restart: unless-stopped
+    image: 'bitnami/redis:5.0-debian-9'
     env_file:
       - .env
-    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/bitnami/redis/data
     networks:
-      - mainnet
-    depends_on:
-      - mongo
-      - pyml
+      - mainnet    
 
 networks:
   mainnet:
 
 volumes:
-  mongodata:    
+  mongodata:
+  redisdata:
   
