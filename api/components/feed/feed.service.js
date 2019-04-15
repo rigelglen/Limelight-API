@@ -209,11 +209,11 @@ async function addMetaData(articles) {
   let imgUrl;
   return await Promise.all(articles.map(async (article) => {
     try {
-      const response = await axios.get(`https://graph.facebook.com/v3.2/?id=${article.link}&access_token=${facebookKey}&fields=og_object{id,title,type,description,picture}`);
-      imgUrl = response.data.og_object.picture.data.url;
-      article.title = response.data.og_object.title;
-      article.description = response.data.og_object.description;
-      // article.source = response.data.site_name;
+      const response = await axios.post(`https://graph.facebook.com/v3.2/?id=${article.link}&access_token=${facebookKey}`);
+      imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
+      article.title = response.data.title;
+      article.description = response.data.description;
+      article.source = response.data.site_name;
       article.image = article.image ? article.image : imgUrl;
     } catch (err) {
       return article;
