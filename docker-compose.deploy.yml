@@ -18,6 +18,8 @@ services:
     env_file:
       - .env
     image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app:latest
+    environment:
+      - APP_ENV=production
     ports:
       - "80:8080"
     networks:
@@ -28,6 +30,7 @@ services:
       
   mongo:
     container_name: mongo
+    restart: unless-stopped
     image: mongo:4.1
     env_file:
       - .env
