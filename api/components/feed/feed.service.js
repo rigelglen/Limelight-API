@@ -13,6 +13,7 @@ const fbThumb = process.env.FB_THUMB === 'true';
 const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
 const grabity = require('grabity');
+const { setRedis, getRedis } = require('../../core/db');
 
 module.exports = {
   getFeed,
@@ -208,16 +209,34 @@ async function getFeedBySearch(searchString, page = 1) {
 async function addMetaData(articles) {
   let imgUrl;
   return await Promise.all(articles.map(async (article) => {
+    let url = article.link;
     try {
-      const response = await axios.post(`https://graph.facebook.com/v3.2/?id=${article.link}&access_token=${facebookKey}`);
-      imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
-      article.title = response.data.title;
-      article.description = response.data.description;
-      article.source = response.data.site_name;
-      article.image = article.image ? article.image : imgUrl;
-    } catch (err) {
-      return article;
+      let res = await getRedis(url);
+      res = JSON.parse(res);
+      if (!res) {
+        throw 'Not found'
+      }
+      console.log(`Found ${url}  on redis!`);
+      article.image = article.image ? article.image : res.image;
+      article.title = res.title;
+      article.description = res.description;
+      article.source = res.source;
+    } catch (e) {
+      try {
+        console.log(`Not found on redis! ${url}`);
+        const response = await axios.post(`https://graph.facebook.com/v3.2/?id=${url}&access_token=${facebookKey}`);
+        imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
+        article.title = response.data.title;
+        article.description = response.data.description;
+        article.source = response.data.site_name;
+        article.image = article.image ? article.image : imgUrl;
+      } catch (err) {
+        return article;
+      } finally {
+        await setRedis(url, JSON.stringify({ ...article }), 'EX', 48 * 60 * 60);
+      }
     }
+
     return article;
   }));
 }

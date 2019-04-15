@@ -1,7 +1,7 @@
 const request = require('supertest');
 const { populateUsers, populateTopics, topics, users } = require('./../../util/test.seed');
 const { app } = require('./../../server');
-const { mongoose } = require('./../../core/db');
+const { mongoose, redisClient } = require('./../../core/db');
 
 var agent = request.agent(app);
 
@@ -13,7 +13,7 @@ describe('Users', () => {
     afterAll(() => {
         mongoose.connection.close();
         mongoose.disconnect();
-
+        redisClient.quit();
     });
 
     describe('POST /users/register', () => {

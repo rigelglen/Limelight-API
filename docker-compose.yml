@@ -34,19 +34,7 @@ services:
     depends_on:
       - mongo
       - pyml
-      
-  mongo:
-    container_name: mongo
-    restart: unless-stopped
-    image: mongo:4.1
-    env_file:
-      - .env
-    ports:
-      - "27018:27017"
-    volumes:
-      - mongodata:/data/db
-    networks:
-      - mainnet
+      - redis
 
   app-test:
     container_name: api-test
@@ -66,10 +54,38 @@ services:
     depends_on:
       - mongo
       - pyml
+      - redis
+
+  mongo:
+    container_name: mongo
+    restart: unless-stopped
+    image: mongo:4.1
+    env_file:
+      - .env
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - mainnet
+
+  redis:
+    container_name: redis
+    restart: unless-stopped
+    image: 'bitnami/redis:latest'
+    env_file:
+      - .env
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/bitnami/redis/data
+    networks:
+      - mainnet
 
 networks:
   mainnet:
 
 volumes:
   mongodata:    
+  redisdata:
   
