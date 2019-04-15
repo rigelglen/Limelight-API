@@ -216,14 +216,14 @@ async function addMetaData(articles) {
       if (!res) {
         throw 'Not found'
       }
-      console.log(`Found ${url}  on redis!`);
+      // console.log(`Found ${url}  on redis!`);
       article.image = article.image ? article.image : res.image;
       article.title = res.title;
       article.description = res.description;
       article.source = res.source;
     } catch (e) {
       try {
-        console.log(`Not found on redis! ${url}`);
+        // console.log(`Not found on redis! ${url}`);
         const response = await axios.post(`https://graph.facebook.com/v3.2/?id=${url}&access_token=${facebookKey}`);
         imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
         article.title = response.data.title;
@@ -233,7 +233,7 @@ async function addMetaData(articles) {
       } catch (err) {
         return article;
       } finally {
-        await setRedis(url, JSON.stringify({ ...article }), 'EX', 48 * 60 * 60);
+        await setRedis(url, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
       }
     }
 
