@@ -28,6 +28,7 @@
         "moment": "^2.24.0",
         "mongoose": "^5.5.1",
         "mongoose-unique-array": "^0.3.1",
+        "morgan": "^1.9.1",
         "newsapi": "^2.4.0",
         "rootpath": "^0.1.2",
         "xml2js-es6-promise": "^1.1.1"

@@ -12,7 +12,7 @@ const gNews = process.env.GNEWS === 'true';
 const fbThumb = process.env.FB_THUMB === 'true';
 const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
-// const grabity = require('grabity');
+const grabity = require('grabity');
 
 module.exports = {
   getFeed,
@@ -45,7 +45,6 @@ async function getFeed(uid, page = 1) {
 
   if (gNews) {
     if (fbThumb) {
-      console.log('adding metadata')
       return await addMetaData(paginate(result, page));
     }
     else {
@@ -68,25 +67,26 @@ async function queryNews(queryString, page, isCat = false) {
 
 async function getFeedByCategory(uid, categoryName, page) {
   categoryName = categoryName.trim().toLowerCase();
-  let news = queryNews(categoryName, page, true);
+
   let tp = Topic.findOne({ name: categoryName });
   let userObj = User.findById(uid);
 
   let isFollow = false;
 
-  [userObj, tp, news] = await Promise.all([userObj, tp, news]);
+  [userObj, tp] = await Promise.all([userObj, tp]);
+
+  let news = []
 
   if (tp) {
+
+    news = await getFeedByTopic(tp, page);
+
     if (userObj.follows.indexOf(tp._id) !== -1) {
       isFollow = true;
     }
   }
 
   if (news.length && tp) {
-    if (fbThumb)
-      news = await addMetaData(paginate(news, page));
-    else
-      news = paginate(news, page);
     return { isFollow, id: tp._id, articles: news };
   }
   else
@@ -153,28 +153,26 @@ async function getFeedByTopic(topicId, page = 1) {
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
 
-  if ((lastRefreshedDate.diff(currentRefreshDate, 'hours') > 3 || !topic.cache) || (!gNews && page !== 1)) {
+  if ((lastRefreshedDate.diff(currentRefreshDate, 'minutes') > 30 || !topic.cache)) {
+
     result = await queryNews(topic.name, page, topic.isCat);
-    if (page === 1) {
-      topic.cache = result;
-      topic.lastRefreshed = new Date();
-      await topic.save();
+    if (gNews) {
+      if (fbThumb)
+        result = await addMetaData(result, page);
     }
+    topic.cache = result;
+    topic.lastRefreshed = new Date();
+    await topic.save();
   }
 
   else if (topic.cache) {
+    console.log('from cache');
     result = topic.cache;
   }
-
   if (gNews) {
-    if (fbThumb)
-      return await addMetaData(paginate(result, page));
-    else
-      return await paginate(result, page);
+    return paginate(result, page);
   }
-  else {
-    return result;
-  }
+  return result;
 }
 
 async function getFeedBySearch(searchString, page = 1) {
@@ -206,18 +204,18 @@ async function getFeedBySearch(searchString, page = 1) {
 //   }));
 // }
 
+
 async function addMetaData(articles) {
   let imgUrl;
   return await Promise.all(articles.map(async (article) => {
     try {
-      const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
-      imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
-      article.title = response.data.title;
-      article.description = response.data.description;
-      article.source = response.data.site_name;
+      const response = await axios.get(`https://graph.facebook.com/v3.2/?id=${article.link}&access_token=${facebookKey}&fields=og_object{id,title,type,description,picture}`);
+      imgUrl = response.data.og_object.picture.data.url;
+      article.title = response.data.og_object.title;
+      article.description = response.data.og_object.description;
+      // article.source = response.data.site_name;
       article.image = article.image ? article.image : imgUrl;
-
-    } catch (error) {
+    } catch (err) {
       return article;
     }
     return article;
