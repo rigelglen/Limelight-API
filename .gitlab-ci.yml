@@ -1,0 +1,28 @@
+image: tmaier/docker-compose:latest
+
+stages:
+  - build
+  - test
+
+services:
+  - docker:dind
+
+before_script:
+  - docker info
+  - docker-compose --version
+
+buildJob:
+  stage: build
+  tags:
+    - docker
+  script:
+    - docker-compose build
+    - docker-compose push
+
+testJob:
+  stage: test
+  tags:
+    - docker
+  script:
+    - docker-compose pull
+    - docker-compose up app-test
