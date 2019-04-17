@@ -42,27 +42,21 @@ async function getFeed(uid, page = 1) {
     }
   });
 
-  let result = await queryNews(queryString, page);
+  let result = await queryNews(queryString);
 
-  if (gNews) {
-    if (fbThumb) {
-      return await addMetaData(paginate(result, page));
-    }
-    else {
-      return await paginate(result, page);
-    }
+  if (fbThumb) {
+    return await addMetaData(paginate(result, page));
   }
-  else {
-    return result;
-  }
+  return await paginate(result, page);
+
 }
 
-async function queryNews(queryString, page, isCat = false) {
+async function queryNews(queryString, isCat = false) {
   if (gNews) {
     return await queryGNews(queryString, isCat);
   }
   else {
-    return await queryNewsApi(queryString, page);
+    return await queryNewsApi(queryString);
   }
 }
 
@@ -95,26 +89,30 @@ async function getFeedByCategory(uid, categoryName, page) {
 }
 
 
-async function queryNewsApi(queryString, page) {
-  const response = await newsapi.v2.everything({
-    q: queryString,
-    language: 'en',
-    sortBy: 'relevancy',
-    page: page,
-    pageSize: 30,
-  });
+async function queryNewsApi(queryString) {
+  try {
+    const response = await newsapi.v2.everything({
+      q: queryString,
+      language: 'en',
+      sortBy: 'relevancy',
+      pageSize: 100,
+    });
 
-  let result = response.articles.map((article) => {
-    return {
-      title: article.title,
-      source: article.source.name,
-      description: article.description,
-      link: article.url,
-      image: article.urlToImage,
-      publishedAt: moment(article.publishedAt).unix()
-    }
-  });
-  return result;
+    let result = response.articles.map((article) => {
+      return {
+        title: article.title,
+        source: article.source.name,
+        description: article.description,
+        link: article.url,
+        image: article.urlToImage,
+        publishedAt: moment(article.publishedAt).unix()
+      }
+    });
+    return result;
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
 }
 
 async function queryGNews(queryString, isCat) {
@@ -150,42 +148,58 @@ async function getFeedByTopic(topicId, page = 1) {
   if (!topic)
     throw 'Topic not found';
   let result;
-
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
 
-  if ((lastRefreshedDate.diff(currentRefreshDate, 'minutes') > 30 || !topic.cache)) {
+  if (((currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache))) {
+    // When cache is invalid 
 
-    result = await queryNews(topic.name, page, topic.isCat);
+    let resultData = await queryNews(topic.name, topic.isCat);
+
     if (gNews) {
-      if (fbThumb)
-        result = await addMetaData(result, page);
+      if (fbThumb) {
+        // Add metadata to the paginated results that are requested
+        result = await addMetaData(paginate(resultData, page));
+
+        // Add metadata later on to all the returned artiles
+        addMetaData(resultData).then((res) => {
+          topic.cache = res;
+          topic.lastRefreshed = new Date();
+          topic.save();
+        }).then(() => {
+          console.log("Save completed");
+        }).catch(e => {
+          console.log("Failure in adding thumbs");
+        });
+
+      }
     }
-    topic.cache = result;
-    topic.lastRefreshed = new Date();
-    await topic.save();
+
+    if (!gNews || !fbThumb) {
+      result = paginate(resultData, page);
+    }
+
+    if (!fbThumb) {
+      topic.cache = resultData;
+      topic.lastRefreshed = new Date();
+      await topic.save();
+    }
+
   }
 
   else if (topic.cache) {
-    console.log('from cache');
-    result = topic.cache;
+    result = paginate(topic.cache, page);
   }
-  if (gNews) {
-    return paginate(result, page);
-  }
+
   return result;
 }
 
 async function getFeedBySearch(searchString, page = 1) {
-  let result = await queryNews(searchString, page);
-  if (gNews) {
-    if (fbThumb)
-      return await addMetaData(paginate(result, page));
-    else
-      return await paginate(result, page);
-  }
+  let result = await queryNews(searchString);
+  if (fbThumb)
+    return await addMetaData(paginate(result, page));
   else
-    return result;
+    return await paginate(result, page);
 }
 
 // async function addMetaData(articles) {

@@ -21,7 +21,7 @@ async function getFollows(uid) {
 async function addFollow(uid, topicString) {
     topicString = topicString.trim().toLowerCase();
     let userObj = User.findById(uid);
-    let tp = Topic.findOne({ name: topicString });
+    let tp = Topic.findOne({ name: topicString }).select("-cache");
 
     [userObj, tp] = await Promise.all([userObj, tp]);
 
