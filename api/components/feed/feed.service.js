@@ -224,6 +224,7 @@ async function addMetaData(articles) {
 }
 
 async function addMetaDataScrape(articles) {
+  console.log(process.env.SCRAPE_TIMEOUT);
   return await Promise.all(articles.map(async (article) => {
     // if (article.image == undefined) {
     try {
@@ -240,7 +241,7 @@ async function addMetaDataScrape(articles) {
     } catch (e) {
       console.log(`Not found on redis`);
       try {
-        const response = await axios.get(article.link, { timeout: 3000 });
+        const response = await axios.get(article.link, { timeout: process.env.SCRAPE_TIMEOUT });
         const html = response.data;
         const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
         const metaData = await metascraper({ html, url });

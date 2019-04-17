@@ -7,13 +7,20 @@ const metascraper = require('metascraper')([
 
 const axios = require('axios');
 
-const targetUrl = 'https://www.crictracker.com/world-cup-2019-indian-selectors-were-presented-with-data-analytics-before-squad-selection';
+const targetUrl = 'https://www.bbc.co.uk/news/health-47951425';
 
 (async () => {
-  const response = await axios.get(targetUrl, { timeout: 3000 });
-  const html = response.data;
-  const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
-  const metaData = await metascraper({ html, url });
+  try {
+    const old = Date.now()
+    const response = await axios.get(targetUrl, { timeout: 3500 });
+    const html = response.data;
+    const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
+    const metaData = await metascraper({ html, url });
 
-  console.log(metaData);
+    console.log(`Time taken => ${Date.now() - old}`)
+
+    console.log(metaData);
+  } catch (e) {
+    console.log("timeout exceeded");
+  }
 })()
