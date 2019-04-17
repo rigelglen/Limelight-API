@@ -1,0 +1,64 @@
+version: "3"
+services:
+
+  pyml:
+    container_name: pyml
+    restart: unless-stopped
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_pyml:latest
+    networks:
+      - mainnet
+
+  app:
+    container_name: api
+    restart: unless-stopped
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app:latest
+    ports:
+      - "80:8080"
+    networks:
+      - mainnet
+    depends_on:
+      - mongo
+      - pyml
+      - redis
+      
+  app-test:
+    container_name: api-test
+    command: npm test
+    restart: "no"
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
+    networks:
+      - mainnet
+    depends_on:
+      - mongo
+      - pyml
+      - redis
+  
+  mongo:
+    container_name: mongo
+    restart: unless-stopped
+    image: mongo:4.1
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - mainnet
+
+  redis:
+    container_name: redis
+    restart: unless-stopped
+    image: 'bitnami/redis:5.0-debian-9'
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/bitnami/redis/data
+    networks:
+      - mainnet    
+
+networks:
+  mainnet:
+
+volumes:
+  mongodata:
+  redisdata:
+  
