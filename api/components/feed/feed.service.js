@@ -225,41 +225,43 @@ async function addMetaData(articles) {
 
 async function addMetaDataScrape(articles) {
   return await Promise.all(articles.map(async (article) => {
-    if (article.image == undefined) {
+    // if (article.image == undefined) {
+    try {
+      let res = await getRedis(article.link);
+      res = JSON.parse(res);
+      if (!res) {
+        throw 'Not found in redis';
+      }
+      console.log("Found in redis")
+      article.image = article.image ? article.image : res.image;
+      article.title = res.title;
+      article.description = res.description;
+      article.source = res.source;
+    } catch (e) {
+      console.log(`Not found on redis`);
       try {
-        let res = await getRedis(article.link);
-        res = JSON.parse(res);
-        if (!res) {
-          throw 'Not found in redis';
-        }
-        console.log("Found in redis")
-        article.image = article.image ? article.image : res.image;
-        article.title = res.title;
-        article.description = res.description;
-        article.source = res.source;
-      } catch (e) {
-        console.log(`Not found on redis`);
-        try {
-          const response = await axios.get(article.link, { timeout: 3000 });
-          const html = response.data;
-          const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
-          const metaData = await metascraper({ html, url });
-          // console.log(metaData)
-          console.log('did not timeout => ' + article.link);
-          article.title = article.title != undefined ? article.title : (metaData.title ? metaData.image : undefined);
-          article.description = metaData.description != undefined ? metaData.description : undefined;
-          article.source = article.source != undefined ? article.source : (metaData.source ? metaData.source : undefined);
-          article.image = article.image != undefined ? article.image : (metaData.image ? metaData.image : undefined);
-        }
-        catch (e) {
-          console.log('timeout => ' + article.link)
-          return article;
-        } finally {
-          await setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
-        }
+        const response = await axios.get(article.link, { timeout: 3000 });
+        const html = response.data;
+        const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
+        const metaData = await metascraper({ html, url });
+        // console.log(metaData)
+        console.log('did not timeout => ' + article.link);
+        if (metaData.image != undefined)
+          article.title = metaData.title;
+
+        article.description = metaData.description != undefined ? metaData.description : undefined;
+        article.source = article.source != undefined ? article.source : (metaData.source ? metaData.source : undefined);
+        article.image = article.image != undefined ? article.image : (metaData.image ? metaData.image : undefined);
+      }
+      catch (e) {
+        console.log('timeout => ' + article.link)
+        return article;
+      } finally {
+        await setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
       }
     }
-    article.title = article.title.substring(0, article.title.lastIndexOf(" - "));
+    // }
+    // article.title = article.title.substring(0, article.title.lastIndexOf(" - "));
     return article;
   }));
 
