@@ -5,6 +5,13 @@ services:
     container_name: pyml
     restart: unless-stopped
     image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_pyml:latest
+    environment:
+      - APP_ENV=${APP_ENV}
+      - FLASK_HOST=${FLASK_HOST}
+      - FLASK_PORT=${FLASK_PORT}
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
     networks:
       - mainnet
 
@@ -12,6 +19,38 @@ services:
     container_name: api
     restart: unless-stopped
     image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app:latest
+    environment:
+      - APP_ENV=${APP_ENV}
+      - NODE_PORT=${NODE_PORT}
+
+      - FLASK_HOST=${FLASK_HOST}
+      - FLASK_PORT=${FLASK_PORT}
+
+      - MONGO_HOST=${MONGO_HOST}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGODB_DB=${MONGODB_DB}
+      - MONGODB_DB_TEST=${MONGODB_DB_TEST}
+      - MONGO_PORT=${MONGO_PORT}
+
+      - JWT_SECRET=${JWT_SECRET}
+      - NEWS_API_KEY=${NEWS_API_KEY}
+      - FACEBOOK_KEY=${FACEBOOK_KEY}
+
+
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+      - NUM_ARTICLES=${NUM_ARTICLES}
+      - GNEWS=${GNEWS}
+      - ADD_META=${ADD_META}
+      - SCRAPE=${SCRAPE}
+      - SCRAPE_TIMEOUT=${SCRAPE_TIMEOUT}
+
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     ports:
       - "80:8080"
     networks:
@@ -26,6 +65,37 @@ services:
     command: npm test
     restart: "no"
     image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
+    environment:
+      - APP_ENV=${APP_ENV}
+      - NODE_PORT=${NODE_PORT}
+
+      - FLASK_HOST=${FLASK_HOST}
+      - FLASK_PORT=${FLASK_PORT}
+
+      - MONGO_HOST=${MONGO_HOST}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGODB_DB=${MONGODB_DB}
+      - MONGODB_DB_TEST=${MONGODB_DB_TEST}
+      - MONGO_PORT=${MONGO_PORT}
+
+      - JWT_SECRET=${JWT_SECRET}
+      - NEWS_API_KEY=${NEWS_API_KEY}
+      - FACEBOOK_KEY=${FACEBOOK_KEY}
+
+
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+      - NUM_ARTICLES=${NUM_ARTICLES}
+      - GNEWS=${GNEWS}
+      - ADD_META=${ADD_META}
+      - SCRAPE=${SCRAPE}
+      - SCRAPE_TIMEOUT=${SCRAPE_TIMEOUT}
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     networks:
       - mainnet
     depends_on:
@@ -37,6 +107,13 @@ services:
     container_name: mongo
     restart: unless-stopped
     image: mongo:4.1
+    environment:      
+      - MONGO_HOST=${MONGO_HOST}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGODB_DB=${MONGODB_DB}
+      - MONGODB_DB_TEST=${MONGODB_DB_TEST}
+      - MONGO_PORT=${MONGO_PORT}
     ports:
       - "27018:27017"
     volumes:
@@ -48,6 +125,10 @@ services:
     container_name: redis
     restart: unless-stopped
     image: 'bitnami/redis:5.0-debian-9'
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - '6379:6379'
     volumes:
