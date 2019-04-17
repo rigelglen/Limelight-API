@@ -17,6 +17,7 @@ buildJob:
     - docker
   script:
     - docker-compose -f docker-compose.ci.yml build
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
     - docker-compose -f docker-compose.ci.yml push
 
 testJob:
