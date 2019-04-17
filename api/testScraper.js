@@ -7,7 +7,7 @@ const metascraper = require('metascraper')([
 
 const axios = require('axios');
 
-const targetUrl = 'https://www.bbc.co.uk/news/health-47951425';
+const targetUrl = 'https://www.theguardian.com/business/2019/apr/17/fca-must-adapt-to-changing-technology-to-regulate-city-andrew-bailey';
 
 (async () => {
   try {

@@ -161,7 +161,7 @@ async function getFeedByTopic(topicId, page = 1) {
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
 
-  console.log(`Diff greater than 30mins => ${currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30}`)
+  // console.log(`Diff greater than 30mins => ${currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30}`)
 
   if ((currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache)) {
     // When cache is invalid 
@@ -224,7 +224,7 @@ async function addMetaData(articles) {
 }
 
 async function addMetaDataScrape(articles) {
-  console.log(process.env.SCRAPE_TIMEOUT);
+  // console.log(process.env.SCRAPE_TIMEOUT);
   return await Promise.all(articles.map(async (article) => {
     // if (article.image == undefined) {
     try {
@@ -233,20 +233,20 @@ async function addMetaDataScrape(articles) {
       if (!res) {
         throw 'Not found in redis';
       }
-      console.log("Found in redis")
+      // console.log("Found in redis")
       article.image = article.image ? article.image : res.image;
       article.title = res.title;
       article.description = res.description;
       article.source = res.source;
     } catch (e) {
-      console.log(`Not found on redis`);
+      // console.log(`Not found on redis`);
       try {
         const response = await axios.get(article.link, { timeout: process.env.SCRAPE_TIMEOUT });
         const html = response.data;
         const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
         const metaData = await metascraper({ html, url });
         // console.log(metaData)
-        console.log('did not timeout => ' + article.link);
+        // console.log('did not timeout => ' + article.link);
         if (metaData.image != undefined)
           article.title = metaData.title;
 
@@ -279,14 +279,14 @@ async function addMetaDataFB(articles) {
       if (!res) {
         throw 'Not found'
       }
-      console.log(`Found ${url}  on redis!`);
+      // console.log(`Found ${url}  on redis!`);
       article.image = article.image ? article.image : res.image;
       article.title = res.title;
       article.description = res.description;
       article.source = res.source;
     } catch (e) {
       try {
-        console.log(`Not found on redis! ${url}`);
+        // console.log(`Not found on redis! ${url}`);
         const response = await axios.post(`https://graph.facebook.com/v3.2/?id=${url}&access_token=${facebookKey}`);
         imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
         article.title = response.data.title;
