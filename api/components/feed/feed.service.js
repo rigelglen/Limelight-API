@@ -9,11 +9,21 @@ const Feed = require('./../../util/rss2json');
 const h2p = require('html2plaintext');
 const numArticles = process.env.NUM_ARTICLES;
 const gNews = process.env.GNEWS === 'true';
-const fbThumb = process.env.FB_THUMB === 'true';
+const addMeta = process.env.ADD_META === 'true';
+const isScrape = process.env.SCRAPE === 'true'
 const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
-const grabity = require('grabity');
 const { setRedis, getRedis } = require('../../core/db');
+
+const metascraper = require('metascraper')([
+  require('metascraper-title')(),
+  require('metascraper-description')(),
+  require('metascraper-image')(),
+  require('metascraper-publisher')(),
+]);
+
+const got = require('got');
+
 
 module.exports = {
   getFeed,
@@ -44,7 +54,7 @@ async function getFeed(uid, page = 1) {
 
   let result = await queryNews(queryString);
 
-  if (fbThumb) {
+  if (addMeta) {
     return await addMetaData(paginate(result, page));
   }
   return await paginate(result, page);
@@ -151,13 +161,15 @@ async function getFeedByTopic(topicId, page = 1) {
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
 
-  if (((currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache))) {
+  console.log(`Diff greater than 30mins => ${currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30}`)
+
+  if ((currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache)) {
     // When cache is invalid 
 
     let resultData = await queryNews(topic.name, topic.isCat);
 
     if (gNews) {
-      if (fbThumb) {
+      if (addMeta) {
         // Add metadata to the paginated results that are requested
         result = await addMetaData(paginate(resultData, page));
 
@@ -175,11 +187,11 @@ async function getFeedByTopic(topicId, page = 1) {
       }
     }
 
-    if (!gNews || !fbThumb) {
+    if (!gNews || !addMeta) {
       result = paginate(resultData, page);
     }
 
-    if (!fbThumb) {
+    if (!addMeta) {
       topic.cache = resultData;
       topic.lastRefreshed = new Date();
       await topic.save();
@@ -188,6 +200,7 @@ async function getFeedByTopic(topicId, page = 1) {
   }
 
   else if (topic.cache) {
+    console.log("From cache");
     result = paginate(topic.cache, page);
   }
 
@@ -196,31 +209,64 @@ async function getFeedByTopic(topicId, page = 1) {
 
 async function getFeedBySearch(searchString, page = 1) {
   let result = await queryNews(searchString);
-  if (fbThumb)
+  if (addMeta)
     return await addMetaData(paginate(result, page));
   else
     return await paginate(result, page);
 }
 
-// async function addMetaData(articles) {
-//   let imgUrl;
-//   return await Promise.all(articles.map(async (article) => {
-//     try {
-//       const response = await grabity.grabIt(`${article.link}`);
-//       imgUrl = response.image;
-//       article.title = response.title;
-//       article.description = response.description;
-//       // article.source = response.data.site_name;
-//       article.image = article.image ? article.image : imgUrl;
-//     } catch (error) {
-//       return article;
-//     }
-//     return article;
-//   }));
-// }
-
-
 async function addMetaData(articles) {
+  if (isScrape) {
+    return await addMetaDataScrape(articles);
+  } else {
+    return await addMetaDataFB(articles);
+  }
+}
+
+async function addMetaDataScrape(articles) {
+  return await Promise.all(articles.map(async (article) => {
+    if (article.image == undefined) {
+      try {
+        let res = await getRedis(article.link);
+        res = JSON.parse(res);
+        if (!res) {
+          throw 'Not found in redis';
+        }
+        console.log("Found in redis")
+        article.image = article.image ? article.image : res.image;
+        article.title = res.title;
+        article.description = res.description;
+        article.source = res.source;
+      } catch (e) {
+        console.log(`Not found on redis`);
+        try {
+          const response = await axios.get(article.link, { timeout: 3000 });
+          const html = response.data;
+          const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
+          const metaData = await metascraper({ html, url });
+          // console.log(metaData)
+          console.log('did not timeout => ' + article.link);
+          article.title = article.title != undefined ? article.title : (metaData.title ? metaData.image : undefined);
+          article.description = metaData.description != undefined ? metaData.description : undefined;
+          article.source = article.source != undefined ? article.source : (metaData.source ? metaData.source : undefined);
+          article.image = article.image != undefined ? article.image : (metaData.image ? metaData.image : undefined);
+        }
+        catch (e) {
+          console.log('timeout => ' + article.link)
+          return article;
+        } finally {
+          await setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
+        }
+      }
+    }
+    article.title = article.title.substring(0, article.title.lastIndexOf(" - "));
+    return article;
+  }));
+
+}
+
+
+async function addMetaDataFB(articles) {
   let imgUrl;
   return await Promise.all(articles.map(async (article) => {
     let url = article.link;
@@ -230,14 +276,14 @@ async function addMetaData(articles) {
       if (!res) {
         throw 'Not found'
       }
-      // console.log(`Found ${url}  on redis!`);
+      console.log(`Found ${url}  on redis!`);
       article.image = article.image ? article.image : res.image;
       article.title = res.title;
       article.description = res.description;
       article.source = res.source;
     } catch (e) {
       try {
-        // console.log(`Not found on redis! ${url}`);
+        console.log(`Not found on redis! ${url}`);
         const response = await axios.post(`https://graph.facebook.com/v3.2/?id=${url}&access_token=${facebookKey}`);
         imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
         article.title = response.data.title;
