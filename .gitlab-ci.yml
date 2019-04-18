@@ -34,6 +34,7 @@ deployJob:
     - apk add --no-cache openssh
     - apk add --no-cache openssh-client
     - apk add --update python py-pip python-dev && pip install docker-compose # install docker-compose
+    - eval $(ssh-agent)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
