@@ -21,7 +21,7 @@ services:
     environment:
       - APP_ENV=production
     ports:
-      - "80:8080"
+      - "8080:8080"
     networks:
       - mainnet
     depends_on:

@@ -42,4 +42,4 @@ deployJob:
     - ssh-keyscan -H 'limelightapp.ml' >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - ssh ci@limelightapp.ml "rm -rf limelight_api && git clone git@gitlab.com:mirandajyothy/limelight_api.git"
-    - ssh ci@limelightapp.ml "cd limelight_api && docker-compose -f docker-compose.ci.yml pull && docker-compose -f docker-compose.ci.yml up -d app"
+    - ssh ci@limelightapp.ml "cd limelight_api && docker-compose -f docker-compose.deploy.yml pull && docker-compose -f docker-compose.deploy.yml up -d app"
