@@ -26,7 +26,7 @@ testJob:
     - docker-compose -f docker-compose.ci.yml run app-test
 
 deployJob:
-
+  when: manual
   stage: deploy
   tags:
     - docker
