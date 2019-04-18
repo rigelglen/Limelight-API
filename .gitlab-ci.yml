@@ -28,6 +28,8 @@ testJob:
 deployJob:
   when: manual
   stage: deploy
+  only:
+    - production
   tags:
     - docker
   script:
