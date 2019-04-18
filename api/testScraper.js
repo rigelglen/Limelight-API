@@ -7,7 +7,7 @@ const metascraper = require('metascraper')([
 
 const axios = require('axios');
 
-const targetUrl = 'https://www.theguardian.com/business/2019/apr/17/fca-must-adapt-to-changing-technology-to-regulate-city-andrew-bailey';
+const targetUrl = 'https://www.theguardian.com/technology/2019/apr/16/spying-claims-show-us-is-ignorant-of-technology-say-huawei-bosses';
 
 (async () => {
   try {

@@ -3,6 +3,7 @@ image: tmaier/docker-compose:latest
 stages:
   - build
   - test
+  - deploy
 
 services:
   - docker:dind
@@ -27,3 +28,21 @@ testJob:
   script:
     - docker-compose -f docker-compose.ci.yml pull
     - docker-compose -f docker-compose.ci.yml run app-test
+
+deployJob:
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan limelightapp.ml >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+
+  stage: deploy
+  tags:
+    - docker
+  script:
+    - ssh jigel@limelightapp.ml
+    - docker-compose -f docker-compose.ci.yml pull
+    - docker-compose -f docker-compose.ci.yml run app
