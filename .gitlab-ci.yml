@@ -1,4 +1,4 @@
-image: docker
+image: tmaier/docker-compose:latest
 
 stages:
   - build
@@ -6,19 +6,7 @@ stages:
   - deploy
 
 services:
-  - docker:dind
-
-before_scripts:
-  - apk add --no-cache openssh
-  - apk add --no-cache openssh-client
-  - apk add --update python py-pip python-dev && pip install docker-compose # install docker-compose
-  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  - ssh-keyscan -H 'limelightapp.ml' >> ~/.ssh/known_hosts
-  - chmod 644 ~/.ssh/known_hosts
-  - docker version
-  - docker-compose version
+  - docker:dind  
 
 buildJob:
   stage: build
@@ -43,4 +31,12 @@ deployJob:
   tags:
     - docker
   script:
-    - ssh jigel@limelightapp.ml "docker-compose -f docker-compose.ci.yml pull;docker-compose -f docker-compose.ci.yml run app"
+    - apk add --no-cache openssh
+    - apk add --no-cache openssh-client
+    - apk add --update python py-pip python-dev && pip install docker-compose # install docker-compose
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H 'limelightapp.ml' >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - ssh jigel@limelightapp.ml "docker-compose -f docker-compose.ci.yml pull && docker-compose -f docker-compose.ci.yml run app"
