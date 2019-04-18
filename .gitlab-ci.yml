@@ -41,4 +41,4 @@ deployJob:
     - chmod 700 ~/.ssh
     - ssh-keyscan -H 'limelightapp.ml' >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-    - ssh -v ci@limelightapp.ml "rm -rf limelight_api && git clone git@gitlab.com:mirandajyothy/limelight_api.git && cd limelight_api && docker-compose -f docker-compose.deploy.yml pull && docker-compose -f docker-compose.deploy.yml up -d app"
+    - ssh -v ci@limelightapp.ml "rm -rf limelight_api && git clone git@gitlab.com:mirandajyothy/limelight_api.git && cd limelight_api && docker-compose -f docker-compose.deploy.yml pull && docker-compose -f docker-compose.deploy.yml up -d app" || ssh -v ci@limelightapp.ml "rm -rf limelight_api && git clone git@gitlab.com:mirandajyothy/limelight_api.git && cd limelight_api && docker-compose -f docker-compose.deploy.yml pull && docker-compose -f docker-compose.deploy.yml up -d app" || ssh -v ci@limelightapp.ml "rm -rf limelight_api && git clone git@gitlab.com:mirandajyothy/limelight_api.git && cd limelight_api && docker-compose -f docker-compose.deploy.yml pull && docker-compose -f docker-compose.deploy.yml up -d app"
