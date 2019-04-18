@@ -179,7 +179,7 @@ async function getFeedByTopic(topicId, page = 1) {
           topic.lastRefreshed = new Date();
           topic.save();
         }).then(() => {
-          console.log("Save completed");
+          // console.log("Save completed");
         }).catch(e => {
           console.log("Failure in adding thumbs");
         });
@@ -255,7 +255,7 @@ async function addMetaDataScrape(articles) {
         article.image = article.image != undefined ? article.image : (metaData.image ? metaData.image : undefined);
       }
       catch (e) {
-        console.log('timeout => ' + article.link)
+        // console.log('timeout => ' + article.link)
         return article;
       } finally {
         await setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
