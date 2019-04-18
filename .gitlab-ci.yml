@@ -33,11 +33,11 @@ deployJob:
   script:
     - apk add --no-cache openssh
     - apk add --no-cache openssh-client
-    - apk add --update python py-pip python-dev && pip install docker-compose # install docker-compose
-    - eval $(ssh-agent)
+    - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - ssh-keyscan -H 'limelightapp.ml' >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-    - ssh jigel@limelightapp.ml "docker-compose -f docker-compose.ci.yml pull && docker-compose -f docker-compose.ci.yml run app"
+    - ssh jigel@limelightapp.ml "git init && git remote add origin git@gitlab.com:mirandajyothy/limelight_api.git && git fetch && git checkout origin/docker -ft"
+    - ssh jigel@limelightapp.ml "docker-compose -f docker-compose.ci.yml pull && docker-compose -f docker-compose.ci.yml up -d app"

@@ -52,7 +52,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "80:8080"
+      - "8080:8080"
     networks:
       - mainnet
     depends_on:
