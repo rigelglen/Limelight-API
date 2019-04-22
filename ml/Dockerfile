@@ -13,4 +13,6 @@ COPY . /usr/app
 
 EXPOSE 3001
 
+RUN chmod 644 app.py
+
 CMD ["python", "app.py"]

@@ -17,7 +17,7 @@ try {
     redisClient = redis.createClient({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT, auth_pass: process.env.REDIS_PASSWORD });
     getRedis = promisify(redisClient.get).bind(redisClient);
     setRedis = promisify(redisClient.set).bind(redisClient);
-    redisClient.on('connect', () => console.log('Successfully connected to redis!'));
+    // redisClient.on('connect', () => console.log('Successfully connected to redis!'));
 } catch (e) {
     console.error(e);
 }

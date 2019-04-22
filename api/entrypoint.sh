@@ -19,7 +19,7 @@ do
 done
 
 if [ $APP_ENV = "production" ]; then
-  node index.js;
+  NODE_ENV=production node index.js;
 else
-  nodemon index.js -L;
+  NODE_ENV=development nodemon index.js -L;
 fi

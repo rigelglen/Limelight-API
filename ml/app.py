@@ -1,10 +1,14 @@
 from flask import Flask, request, jsonify, make_response
-from clickbait import classifier
+from waitress import serve
+
+from clickbait import classifier as clickbait_clf
 from sentiment import sentiment as senti
-from util import article_util
 from keywords import keywords as key
+
 import os
 import urllib3
+from util import article_util
+
 app = Flask(__name__)
 
 
@@ -17,57 +21,67 @@ def hello_world():
 def classify():
     if 'url' not in request.args:
         return make_response(jsonify(message="Please pass a url"), 400)
+    try:
+        url = request.args.get('url')
+        title, text = article_util.get_article(url)
+        resClickBait = clickbait_clf.get_classifier().classify(title)
+        resSenti = senti.sentiment_analyzer_scores(text)
 
-    url = request.args.get('url')
-    title, text = article_util.get_article(url)
-    resClickBait = classifier.get_classifier().classify(title)
-    if(resClickBait == False):
-        return make_response(jsonify(message="Could not fetch the article"), 400)
-
-    resSenti = senti.sentiment_analyzer_scores(text)
-
-    res = {"clickbait": resClickBait, "sentiment": resSenti}
-    return jsonify(res)
+        res = {"clickbait": resClickBait, "sentiment": resSenti}
+        return jsonify(res)
+    except ValueError as e:
+        return make_response(jsonify(message=str(e)), 400)
 
 
 @app.route('/clickbait')
 def clickbait():
     if 'url' not in request.args:
         return make_response(jsonify(message="Please pass a url"), 400)
-
-    url = request.args.get('url')
-    title, _ = article_util.get_article(url)
-    res = classifier.get_classifier().classify(title)
-    if(res == False):
-        return make_response(jsonify(message="Could not fetch the article"), 400)
-    print(res)
-    return jsonify(res)
+    try:
+        url = request.args.get('url')
+        title, _ = article_util.get_article(url)
+        res = clickbait_clf.get_classifier().classify(title)
+        print(res)
+        return jsonify(res)
+    except ValueError as e:
+        return make_response(jsonify(message=str(e)), 400)
 
 
 @app.route('/sentiment')
 def sentiment():
     if 'url' not in request.args:
         return make_response(jsonify(message="Please pass a url"), 400)
-
-    url = request.args.get('url')
-    _, text = article_util.get_article(url)
-    res = senti.sentiment_analyzer_scores(text)
-    if(res == False):
-        return make_response(jsonify(message="Could not fetch the article"), 400)
-    # print(res)
-    return jsonify(res)
+    try:
+        url = request.args.get('url')
+        _, text = article_util.get_article(url)
+        res = senti.sentiment_analyzer_scores(text)
+        return jsonify(res)
+    except ValueError as e:
+        return make_response(jsonify(message=str(e)), 400)
 
 
 @app.route('/keywords')
 def keywords():
     if 'text' not in request.args:
         return make_response(jsonify(message="Please pass a url"), 400)
-    text = request.args.get('text')
-    return jsonify(key.get_keywords(text))
+    try:
+        text = request.args.get('text')
+        return jsonify(key.get_keywords(text))
+    except:
+        return make_response(jsonify(message="Could not get keywords"), 400)
 
 
 port = int(os.getenv('FLASK_PORT'))
-print(port)
+
+debugFlag = False
+
+if(os.getenv('APP_ENV') == 'production'):
+    debugFlag = False
+
 if __name__ == '__main__':
-    app.run(debug=True, host=os.getenv('FLASK_HOST'),
-            port=port)
+    if debugFlag:
+        app.run(debug=debugFlag, host=os.getenv('FLASK_HOST'),
+                port=port)
+    else:
+        serve(app, host=os.getenv('FLASK_HOST'),
+              port=port)

@@ -120,7 +120,7 @@ async function queryNewsApi(queryString) {
     });
     return result;
   } catch (e) {
-    console.log(e);
+    // console.log(e);
     return [];
   }
 }
@@ -181,7 +181,7 @@ async function getFeedByTopic(topicId, page = 1) {
         }).then(() => {
           // console.log("Save completed");
         }).catch(e => {
-          console.log("Failure in adding thumbs");
+          // console.log("Failure in adding thumbs");
         });
 
       }
@@ -200,7 +200,7 @@ async function getFeedByTopic(topicId, page = 1) {
   }
 
   else if (topic.cache) {
-    console.log("From cache");
+    // console.log("From cache");
     result = paginate(topic.cache, page);
   }
 
