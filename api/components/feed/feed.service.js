@@ -13,7 +13,8 @@ const addMeta = process.env.ADD_META === 'true';
 const isScrape = process.env.SCRAPE === 'true'
 const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
-const { setRedis, getRedis } = require('../../core/db');
+const { getRedisMulti, setRedisMulti } = require('../../core/db');
+const _ = require('lodash');
 
 const metascraper = require('metascraper')([
   require('metascraper-title')(),
@@ -51,9 +52,7 @@ async function getFeed(uid, page = 1) {
       queryString = `${queryString} ${separator} ${topic.name}`;
     }
   });
-
   let result = await queryNews(queryString);
-
   if (addMeta) {
     return await addMetaData(paginate(result, page));
   }
@@ -224,24 +223,34 @@ async function addMetaData(articles) {
 }
 
 async function addMetaDataScrape(articles) {
-  // console.log(process.env.SCRAPE_TIMEOUT);
-  return await Promise.all(articles.map(async (article) => {
-    // if (article.image == undefined) {
-    try {
-      let res = await getRedis(article.link);
-      res = JSON.parse(res);
-      if (!res) {
-        throw 'Not found in redis';
-      }
-      // console.log("Found in redis")
-      article.image = article.image ? article.image : res.image;
-      article.title = res.title;
-      article.description = res.description;
-      article.source = res.source;
-    } catch (e) {
-      // console.log(`Not found on redis`);
+
+  const articleLinks = articles.map(article => article.link);
+  let mapRedis = new Map()
+  let resRedisMulti = await getRedisMulti(articleLinks);
+  let jsonRedis = resRedisMulti.filter(n => n).map(article => JSON.parse(article));
+
+  jsonRedis.map((article) => {
+    if (!mapRedis.has(article.link)) {
+      mapRedis.set(article.link, article);
+    }
+  });
+
+  articles.map((article) => {
+    if (!mapRedis.has(article.link)) {
+      mapRedis.set(article.link, { ...article, notFound: 1 });
+    }
+  });
+
+  let resRedis = [...mapRedis.values()];
+
+  const result = await Promise.all(resRedis.map(async (article) => {
+    if (article.notFound === 1) {
+
+      //console.log(`Not found on redis so getting from URL ${article.link}`);
       try {
+        // console.time(`Time taken to download ${article.link}`)
         const response = await axios.get(article.link, { timeout: process.env.SCRAPE_TIMEOUT });
+        // console.timeEnd(`Time taken to download ${article.link}`)
         const html = response.data;
         const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
         const metaData = await metascraper({ html, url });
@@ -258,52 +267,77 @@ async function addMetaDataScrape(articles) {
         // console.log('timeout => ' + article.link)
         return article;
       } finally {
-        await setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
+        delete article.notFound;
+        // setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
+
       }
     }
-    // }
-    // article.title = article.title.substring(0, article.title.lastIndexOf(" - "));
     return article;
   }));
 
+  saveToRedis(result);
+
+  return result;
 }
 
-
 async function addMetaDataFB(articles) {
-  let imgUrl;
-  return await Promise.all(articles.map(async (article) => {
-    let url = article.link;
-    try {
-      let res = await getRedis(url);
-      res = JSON.parse(res);
-      if (!res) {
-        throw 'Not found'
-      }
-      // console.log(`Found ${url}  on redis!`);
-      article.image = article.image ? article.image : res.image;
-      article.title = res.title;
-      article.description = res.description;
-      article.source = res.source;
-    } catch (e) {
+  const articleLinks = articles.map(article => article.link);
+  let mapRedis = new Map()
+  let resRedisMulti = await getRedisMulti(articleLinks);
+  let jsonRedis = resRedisMulti.filter(n => n).map(article => JSON.parse(article));
+
+  jsonRedis.map((article) => {
+    if (!mapRedis.has(article.link)) {
+      mapRedis.set(article.link, article);
+    }
+  });
+
+  articles.map((article) => {
+    if (!mapRedis.has(article.link)) {
+      mapRedis.set(article.link, { ...article, notFound: 1 });
+    }
+  });
+
+  let resRedis = [...mapRedis.values()];
+
+  const result = await Promise.all(resRedis.map(async (article) => {
+    if (article.notFound === 1) {
       try {
         // console.log(`Not found on redis! ${url}`);
-        const response = await axios.post(`https://graph.facebook.com/v3.2/?id=${url}&access_token=${facebookKey}`);
-        imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
+        const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
+        console.log(response.data);
+        let imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
         article.title = response.data.title;
         article.description = response.data.description;
         article.source = response.data.site_name;
         article.image = article.image ? article.image : imgUrl;
-      } catch (err) {
+        // console.log(JSON.stringify(article, null, 2));
+      } catch (error) {
         return article;
       } finally {
-        await setRedis(url, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
+        delete article.notFound;
+        // await setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
       }
     }
-
     return article;
   }));
+
+  saveToRedis(result);
+
+  return result;
 }
 
+
+function saveToRedis(articles) {
+  const transformedArticles = articles.map((article) => {
+    return [article.link, JSON.stringify(article)]
+  });
+
+  const flattenedArticles = _.flatten(transformedArticles);
+  setRedisMulti(flattenedArticles)
+  // console.log(JSON.stringify(flattenedArticles, null, 2))
+
+}
 
 function paginate(data, page) {
   const startIndex = (page - 1) * numArticles;
