@@ -13,6 +13,7 @@ const dbOptions = {
 }
 let redisClient;
 let getRedis;
+let setRedis;
 let getRedisMulti;
 let setRedisMulti;
 try {
@@ -21,16 +22,14 @@ try {
     setRedis = promisify(redisClient.set).bind(redisClient);
     getRedisMulti = promisify(redisClient.mget).bind(redisClient);
     setRedisMulti = promisify(redisClient.mset).bind(redisClient);
-    redisClient.on('connect', () => console.log('Successfully connected to redis!'));
+    // redisClient.on('connect', () => console.log('Successfully connected to redis!'));
 } catch (e) {
     console.error(e);
 }
 
-let url = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_HOST}/${process.env.MONGODB_DB}?authSource=admin`;
-
-if (process.env.NODE_ENV == 'test') {
-    url = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_HOST}/${process.env.MONGODB_DB_TEST}?authSource=admin`;
-}
+const url = process.env.NODE_ENV == 'test' ?
+    `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_HOST}/${process.env.MONGODB_DB_TEST}?authSource=admin`
+    : `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_HOST}/${process.env.MONGODB_DB}?authSource=admin`;
 
 mongoose.connect(url, dbOptions).catch((ex) => {
     process.exit(1);

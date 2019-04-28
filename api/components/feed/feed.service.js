@@ -23,9 +23,6 @@ const metascraper = require('metascraper')([
   require('metascraper-publisher')(),
 ]);
 
-const got = require('got');
-
-
 module.exports = {
   getFeed,
   getFeedByTopic,
@@ -42,17 +39,16 @@ async function getFeed(uid, page = 1) {
     }
   }).select('name -_id');
 
-  let queryString = "";
-
-  topicNames.map((topic, index) => {
+  const queryString = topicNames.reduce((query, topic, index) => {
     if (index == 0) {
-      queryString = `${topic.name}`;
+      query = `${topic.name}`;
+    } else {
+      query = `${query} ${separator} ${topic.name}`;
     }
-    else {
-      queryString = `${queryString} ${separator} ${topic.name}`;
-    }
-  });
-  let result = await queryNews(queryString);
+    return query;
+  }, "");
+
+  const result = await queryNews(queryString);
   if (addMeta) {
     return await addMetaData(paginate(result, page));
   }
@@ -107,7 +103,7 @@ async function queryNewsApi(queryString) {
       pageSize: 100,
     });
 
-    let result = response.articles.map((article) => {
+    const result = response.articles.map((article) => {
       return {
         title: article.title,
         source: article.source.name,
@@ -165,7 +161,7 @@ async function getFeedByTopic(topicId, page = 1) {
   if ((currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache)) {
     // When cache is invalid 
 
-    let resultData = await queryNews(topic.name, topic.isCat);
+    const resultData = await queryNews(topic.name, topic.isCat);
 
     if (gNews) {
       if (addMeta) {
@@ -207,7 +203,7 @@ async function getFeedByTopic(topicId, page = 1) {
 }
 
 async function getFeedBySearch(searchString, page = 1) {
-  let result = await queryNews(searchString);
+  const result = await queryNews(searchString);
   if (addMeta)
     return await addMetaData(paginate(result, page));
   else
@@ -224,38 +220,15 @@ async function addMetaData(articles) {
 
 async function addMetaDataScrape(articles) {
 
-  const articleLinks = articles.map(article => article.link);
-  let mapRedis = new Map()
-  let resRedisMulti = await getRedisMulti(articleLinks);
-  let jsonRedis = resRedisMulti.filter(n => n).map(article => JSON.parse(article));
-
-  jsonRedis.map((article) => {
-    if (!mapRedis.has(article.link)) {
-      mapRedis.set(article.link, article);
-    }
-  });
-
-  articles.map((article) => {
-    if (!mapRedis.has(article.link)) {
-      mapRedis.set(article.link, { ...article, notFound: 1 });
-    }
-  });
-
-  let resRedis = [...mapRedis.values()];
+  const resRedis = await getFromRedis(articles);
 
   const result = await Promise.all(resRedis.map(async (article) => {
     if (article.notFound === 1) {
-
-      //console.log(`Not found on redis so getting from URL ${article.link}`);
       try {
-        // console.time(`Time taken to download ${article.link}`)
         const response = await axios.get(article.link, { timeout: process.env.SCRAPE_TIMEOUT });
-        // console.timeEnd(`Time taken to download ${article.link}`)
         const html = response.data;
         const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
         const metaData = await metascraper({ html, url });
-        // console.log(metaData)
-        // console.log('did not timeout => ' + article.link);
         if (metaData.image != undefined)
           article.title = metaData.title;
 
@@ -264,12 +237,9 @@ async function addMetaDataScrape(articles) {
         article.image = article.image != undefined ? article.image : (metaData.image ? metaData.image : undefined);
       }
       catch (e) {
-        // console.log('timeout => ' + article.link)
         return article;
       } finally {
         delete article.notFound;
-        // setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
-
       }
     }
     return article;
@@ -281,42 +251,22 @@ async function addMetaDataScrape(articles) {
 }
 
 async function addMetaDataFB(articles) {
-  const articleLinks = articles.map(article => article.link);
-  let mapRedis = new Map()
-  let resRedisMulti = await getRedisMulti(articleLinks);
-  let jsonRedis = resRedisMulti.filter(n => n).map(article => JSON.parse(article));
-
-  jsonRedis.map((article) => {
-    if (!mapRedis.has(article.link)) {
-      mapRedis.set(article.link, article);
-    }
-  });
-
-  articles.map((article) => {
-    if (!mapRedis.has(article.link)) {
-      mapRedis.set(article.link, { ...article, notFound: 1 });
-    }
-  });
-
-  let resRedis = [...mapRedis.values()];
+  const resRedis = await getFromRedis(articles);
 
   const result = await Promise.all(resRedis.map(async (article) => {
     if (article.notFound === 1) {
       try {
-        // console.log(`Not found on redis! ${url}`);
         const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
-        console.log(response.data);
-        let imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
+        // console.log(response.data);
+        const imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
         article.title = response.data.title;
         article.description = response.data.description;
         article.source = response.data.site_name;
         article.image = article.image ? article.image : imgUrl;
-        // console.log(JSON.stringify(article, null, 2));
       } catch (error) {
         return article;
       } finally {
         delete article.notFound;
-        // await setRedis(article.link, JSON.stringify({ ...article }), 'EX', 3 * 60 * 60);
       }
     }
     return article;
@@ -328,15 +278,34 @@ async function addMetaDataFB(articles) {
 }
 
 
-function saveToRedis(articles) {
+async function saveToRedis(articles) {
   const transformedArticles = articles.map((article) => {
     return [article.link, JSON.stringify(article)]
   });
 
   const flattenedArticles = _.flatten(transformedArticles);
   setRedisMulti(flattenedArticles)
-  // console.log(JSON.stringify(flattenedArticles, null, 2))
+}
 
+async function getFromRedis(articles) {
+  const articleLinks = articles.map(article => article.link);
+  const mapRedis = new Map();
+  const resRedisMulti = await getRedisMulti(articleLinks);
+  const jsonRedis = resRedisMulti.filter(n => n).map(article => JSON.parse(article));
+
+  jsonRedis.forEach((article) => {
+    if (!mapRedis.has(article.link)) {
+      mapRedis.set(article.link, article);
+    }
+  });
+
+  articles.forEach((article) => {
+    if (!mapRedis.has(article.link)) {
+      mapRedis.set(article.link, { ...article, notFound: 1 });
+    }
+  });
+
+  return [...mapRedis.values()];
 }
 
 function paginate(data, page) {

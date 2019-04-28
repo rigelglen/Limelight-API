@@ -42,7 +42,7 @@ function _delete(req, res, next) {
 }
 
 function validateAuth(req, res, next) {
-    let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    const reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
 
     if (!req.body.email || !req.body.password || req.body.email.length <= 0 || req.body.password.length <= 0) {
         throw 'Email and Password must be provided';

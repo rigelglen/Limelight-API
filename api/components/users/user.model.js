@@ -13,7 +13,7 @@ const schema = new Schema({
 });
 
 schema.pre('save', function (next) {
-    let sample = this;
+    const sample = this;
     sample.follows = _.uniq(sample.follows, function (i) { return (i._id) ? i._id.toString() : i; });
     next();
 });
