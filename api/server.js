@@ -8,7 +8,7 @@ const jwt = require('./core/jwt');
 const errorHandler = require('./core/error-handler');
 
 if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production') {
-  const morgan = require('morgan')
+  const morgan = require('morgan');
   app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 }
 

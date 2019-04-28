@@ -12,6 +12,8 @@ services:
       dockerfile: Dockerfile
     networks:
       - mainnet
+    ports:
+      - "3001:3001"
     volumes:
       - ./ml:/usr/app/
 

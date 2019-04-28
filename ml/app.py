@@ -26,8 +26,8 @@ def classify():
         title, text = article_util.get_article(url)
         resClickBait = clickbait_clf.get_classifier().classify(title)
         resSenti = senti.sentiment_analyzer_scores(text)
-
         res = {"clickbait": resClickBait, "sentiment": resSenti}
+
         return jsonify(res)
     except ValueError as e:
         return make_response(jsonify(message=str(e)), 400)
@@ -63,7 +63,7 @@ def sentiment():
 @app.route('/keywords')
 def keywords():
     if 'text' not in request.args:
-        return make_response(jsonify(message="Please pass a url"), 400)
+        return make_response(jsonify(message="Please pass some text"), 400)
     try:
         text = request.args.get('text')
         return jsonify(key.get_keywords(text))
@@ -73,15 +73,14 @@ def keywords():
 
 port = int(os.getenv('FLASK_PORT'))
 
-debugFlag = False
+debugFlag = True
 
 if(os.getenv('APP_ENV') == 'production'):
     debugFlag = False
-
 if __name__ == '__main__':
     if debugFlag:
         app.run(debug=debugFlag, host=os.getenv('FLASK_HOST'),
                 port=port)
     else:
-        serve(app, host=os.getenv('FLASK_HOST'),
-              port=port)
+        print("Waitress server running on port ", port)
+        serve(app, host=os.getenv('FLASK_HOST'), port=port)

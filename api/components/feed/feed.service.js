@@ -10,7 +10,7 @@ const h2p = require('html2plaintext');
 const numArticles = process.env.NUM_ARTICLES;
 const gNews = process.env.GNEWS === 'true';
 const addMeta = process.env.ADD_META === 'true';
-const isScrape = process.env.SCRAPE === 'true'
+const isScrape = process.env.SCRAPE === 'true';
 const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
 const { getRedisMulti, setRedisMulti } = require('../../core/db');
@@ -27,16 +27,16 @@ module.exports = {
   getFeed,
   getFeedByTopic,
   getFeedBySearch,
-  getFeedByCategory
+  getFeedByCategory,
 };
 
 async function getFeed(uid, page = 1) {
   const userObj = await User.findById(uid);
-  const separator = gNews ? '|' : 'OR'
+  const separator = gNews ? '|' : 'OR';
   const topicNames = await Topic.find({
-    "_id": {
-      $in: userObj.follows
-    }
+    _id: {
+      $in: userObj.follows,
+    },
   }).select('name -_id');
 
   const queryString = topicNames.reduce((query, topic, index) => {
@@ -46,21 +46,19 @@ async function getFeed(uid, page = 1) {
       query = `${query} ${separator} ${topic.name}`;
     }
     return query;
-  }, "");
+  }, '');
 
   const result = await queryNews(queryString);
   if (addMeta) {
     return await addMetaData(paginate(result, page));
   }
   return await paginate(result, page);
-
 }
 
 async function queryNews(queryString, isCat = false) {
   if (gNews) {
     return await queryGNews(queryString, isCat);
-  }
-  else {
+  } else {
     return await queryNewsApi(queryString);
   }
 }
@@ -73,12 +71,11 @@ async function getFeedByCategory(uid, categoryName, page) {
 
   let isFollow = false;
 
-  [userObj, tp] = await Promise.all([userObj, tp]);
+  [ userObj, tp ] = await Promise.all([ userObj, tp ]);
 
-  let news = []
+  let news = [];
 
   if (tp) {
-
     news = await getFeedByTopic(tp, page);
 
     if (userObj.follows.indexOf(tp._id) !== -1) {
@@ -88,11 +85,8 @@ async function getFeedByCategory(uid, categoryName, page) {
 
   if (news.length && tp) {
     return { isFollow, id: tp._id, articles: news };
-  }
-  else
-    throw 'Invalid category';
+  } else throw 'Invalid category';
 }
-
 
 async function queryNewsApi(queryString) {
   try {
@@ -110,8 +104,8 @@ async function queryNewsApi(queryString) {
         description: article.description,
         link: article.url,
         image: article.urlToImage,
-        publishedAt: moment(article.publishedAt).unix()
-      }
+        publishedAt: moment(article.publishedAt).unix(),
+      };
     });
     return result;
   } catch (e) {
@@ -121,11 +115,11 @@ async function queryNewsApi(queryString) {
 }
 
 async function queryGNews(queryString, isCat) {
-  let url = "https://news.google.com/rss";
+  let url = 'https://news.google.com/rss';
   if (queryString.length > 0)
-    url = isCat ? `https://news.google.com/news/rss/headlines/section/topic/${queryString.toUpperCase()}` :
-      `https://news.google.com/rss/search?q=${queryString}`;
-
+    url = isCat
+      ? `https://news.google.com/news/rss/headlines/section/topic/${queryString.toUpperCase()}`
+      : `https://news.google.com/rss/search?q=${queryString}`;
 
   try {
     const rss = await Feed.load(url);
@@ -133,33 +127,30 @@ async function queryGNews(queryString, isCat) {
       return {
         title: article.title,
         source: article.source,
-        description: isCat ? undefined : h2p(article.description).split("\n\n")[1],
+        description: isCat ? undefined : h2p(article.description).split('\n\n')[1],
         link: article.link,
         image: article.media ? article.media.content[0].url[0] : undefined,
-        publishedAt: article.created
-      }
+        publishedAt: article.created,
+      };
     });
 
     return result;
-
   } catch (err) {
     return err;
   }
 }
 
-
 async function getFeedByTopic(topicId, page = 1) {
   const topic = await Topic.findById(topicId);
-  if (!topic)
-    throw 'Topic not found';
+  if (!topic) throw 'Topic not found';
   let result;
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
 
   // console.log(`Diff greater than 30mins => ${currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30}`)
 
-  if ((currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache)) {
-    // When cache is invalid 
+  if (currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache) {
+    // When cache is invalid
 
     const resultData = await queryNews(topic.name, topic.isCat);
 
@@ -169,16 +160,18 @@ async function getFeedByTopic(topicId, page = 1) {
         result = await addMetaData(paginate(resultData, page));
 
         // Add metadata later on to all the returned artiles
-        addMetaData(resultData).then((res) => {
-          topic.cache = res;
-          topic.lastRefreshed = new Date();
-          topic.save();
-        }).then(() => {
-          // console.log("Save completed");
-        }).catch(e => {
-          // console.log("Failure in adding thumbs");
-        });
-
+        addMetaData(resultData)
+          .then((res) => {
+            topic.cache = res;
+            topic.lastRefreshed = new Date();
+            topic.save();
+          })
+          .then(() => {
+            // console.log("Save completed");
+          })
+          .catch((e) => {
+            // console.log("Failure in adding thumbs");
+          });
       }
     }
 
@@ -191,10 +184,7 @@ async function getFeedByTopic(topicId, page = 1) {
       topic.lastRefreshed = new Date();
       await topic.save();
     }
-
-  }
-
-  else if (topic.cache) {
+  } else if (topic.cache) {
     // console.log("From cache");
     result = paginate(topic.cache, page);
   }
@@ -204,10 +194,8 @@ async function getFeedByTopic(topicId, page = 1) {
 
 async function getFeedBySearch(searchString, page = 1) {
   const result = await queryNews(searchString);
-  if (addMeta)
-    return await addMetaData(paginate(result, page));
-  else
-    return await paginate(result, page);
+  if (addMeta) return await addMetaData(paginate(result, page));
+  else return await paginate(result, page);
 }
 
 async function addMetaData(articles) {
@@ -219,31 +207,34 @@ async function addMetaData(articles) {
 }
 
 async function addMetaDataScrape(articles) {
-
   const resRedis = await getFromRedis(articles);
 
-  const result = await Promise.all(resRedis.map(async (article) => {
-    if (article.notFound === 1) {
-      try {
-        const response = await axios.get(article.link, { timeout: process.env.SCRAPE_TIMEOUT });
-        const html = response.data;
-        const url = response.request.res.req.agent.protocol + "//" + response.request.res.connection._host + response.request.path;
-        const metaData = await metascraper({ html, url });
-        if (metaData.image != undefined)
-          article.title = metaData.title;
+  const result = await Promise.all(
+    resRedis.map(async (article) => {
+      if (article.notFound === 1) {
+        try {
+          const response = await axios.get(article.link, { timeout: process.env.SCRAPE_TIMEOUT });
+          const html = response.data;
+          const url =
+            response.request.res.req.agent.protocol +
+            '//' +
+            response.request.res.connection._host +
+            response.request.path;
+          const metaData = await metascraper({ html, url });
+          if (metaData.image != undefined) article.title = metaData.title;
 
-        article.description = metaData.description != undefined ? metaData.description : undefined;
-        article.source = article.source != undefined ? article.source : (metaData.source ? metaData.source : undefined);
-        article.image = article.image != undefined ? article.image : (metaData.image ? metaData.image : undefined);
+          article.description = metaData.description != undefined ? metaData.description : undefined;
+          article.source = article.source != undefined ? article.source : metaData.source ? metaData.source : undefined;
+          article.image = article.image != undefined ? article.image : metaData.image ? metaData.image : undefined;
+        } catch (e) {
+          return article;
+        } finally {
+          delete article.notFound;
+        }
       }
-      catch (e) {
-        return article;
-      } finally {
-        delete article.notFound;
-      }
-    }
-    return article;
-  }));
+      return article;
+    })
+  );
 
   saveToRedis(result);
 
@@ -253,45 +244,50 @@ async function addMetaDataScrape(articles) {
 async function addMetaDataFB(articles) {
   const resRedis = await getFromRedis(articles);
 
-  const result = await Promise.all(resRedis.map(async (article) => {
-    if (article.notFound === 1) {
-      try {
-        const response = await axios.post(`https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`);
-        // console.log(response.data);
-        const imgUrl = response.data.image[0].secure_url ? response.data.image[0].secure_url : response.data.image[0].url;
-        article.title = response.data.title;
-        article.description = response.data.description;
-        article.source = response.data.site_name;
-        article.image = article.image ? article.image : imgUrl;
-      } catch (error) {
-        return article;
-      } finally {
-        delete article.notFound;
+  const result = await Promise.all(
+    resRedis.map(async (article) => {
+      if (article.notFound === 1) {
+        try {
+          const response = await axios.post(
+            `https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`
+          );
+          // console.log(response.data);
+          const imgUrl = response.data.image[0].secure_url
+            ? response.data.image[0].secure_url
+            : response.data.image[0].url;
+          article.title = response.data.title;
+          article.description = response.data.description;
+          article.source = response.data.site_name;
+          article.image = article.image ? article.image : imgUrl;
+        } catch (error) {
+          return article;
+        } finally {
+          delete article.notFound;
+        }
       }
-    }
-    return article;
-  }));
+      return article;
+    })
+  );
 
   saveToRedis(result);
 
   return result;
 }
 
-
 async function saveToRedis(articles) {
   const transformedArticles = articles.map((article) => {
-    return [article.link, JSON.stringify(article)]
+    return [ article.link, JSON.stringify(article) ];
   });
 
   const flattenedArticles = _.flatten(transformedArticles);
-  setRedisMulti(flattenedArticles)
+  setRedisMulti(flattenedArticles);
 }
 
 async function getFromRedis(articles) {
-  const articleLinks = articles.map(article => article.link);
+  const articleLinks = articles.map((article) => article.link);
   const mapRedis = new Map();
   const resRedisMulti = await getRedisMulti(articleLinks);
-  const jsonRedis = resRedisMulti.filter(n => n).map(article => JSON.parse(article));
+  const jsonRedis = resRedisMulti.filter((n) => n).map((article) => JSON.parse(article));
 
   jsonRedis.forEach((article) => {
     if (!mapRedis.has(article.link)) {
@@ -305,17 +301,15 @@ async function getFromRedis(articles) {
     }
   });
 
-  return [...mapRedis.values()];
+  return [ ...mapRedis.values() ];
 }
 
 function paginate(data, page) {
   const startIndex = (page - 1) * numArticles;
   const endIndex = page * numArticles;
   try {
-    if (endIndex < data.length)
-      data = data.slice(startIndex, endIndex);
-    else
-      data = data.slice(startIndex, data.length - 1);
+    if (endIndex < data.length) data = data.slice(startIndex, endIndex);
+    else data = data.slice(startIndex, data.length - 1);
   } catch (error) {
     return [];
   }

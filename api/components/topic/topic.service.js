@@ -2,60 +2,58 @@ const db = require('./../../core/db');
 const Topic = db.Topic;
 const User = db.User;
 
-
 module.exports = {
-    getFollows,
-    addFollow,
-    removeFollow
+  getFollows,
+  addFollow,
+  removeFollow,
 };
 
 async function getFollows(uid) {
-    const userFollows = await User.findById(uid);
-    const follows = await Topic.find({ _id: { $in: userFollows.follows } }).select('-cache');
-    return follows.map((follow) => {
-        return { ...follow.toObject(), id: follow._id, name: follow.name.charAt(0).toUpperCase() + follow.name.slice(1) }
-    })
-
+  const userFollows = await User.findById(uid);
+  const follows = await Topic.find({ _id: { $in: userFollows.follows } }).select('-cache');
+  return follows.map((follow) => {
+    return {
+      ...follow.toObject(),
+      id: follow._id,
+      name: follow.name.charAt(0).toUpperCase() + follow.name.slice(1),
+    };
+  });
 }
 
 async function addFollow(uid, topicString) {
-    topicString = topicString.trim().toLowerCase();
-    let userObj = User.findById(uid);
-    let tp = Topic.findOne({ name: topicString }).select("-cache");
+  topicString = topicString.trim().toLowerCase();
+  let userObj = User.findById(uid);
+  let tp = Topic.findOne({ name: topicString }).select('-cache');
 
-    [userObj, tp] = await Promise.all([userObj, tp]);
+  [ userObj, tp ] = await Promise.all([ userObj, tp ]);
 
-    if (tp) {
-        if (userObj.follows.indexOf(tp._id) !== -1) {
-            throw `Topic '${topicString}' is already followed`
-        }
-        userObj.follows.push(tp._id);
-        await userObj.save();
-        return tp;
+  if (tp) {
+    if (userObj.follows.indexOf(tp._id) !== -1) {
+      throw `Topic '${topicString}' is already followed`;
     }
+    userObj.follows.push(tp._id);
+    await userObj.save();
+    return tp;
+  } else {
+    const newTopic = new Topic({ name: topicString });
+    await newTopic.save();
+    const _id = newTopic._id;
+    userObj.follows.push(_id);
+    await userObj.save();
 
-    else {
-        const newTopic = new Topic({ name: topicString });
-        await newTopic.save();
-        const _id = newTopic._id;
-        userObj.follows.push(_id);
-        await userObj.save();
-
-        return newTopic;
-    }
-
+    return newTopic;
+  }
 }
 
 async function removeFollow(uid, tid) {
-    const userObj = await User.findById(uid);
+  const userObj = await User.findById(uid);
 
-    if (userObj.follows.indexOf(tid) === -1) {
-        throw 'You are not following this topic';
-    }
-    else {
-        const index = userObj.follows.indexOf(tid)
-        userObj.follows.splice(index, 1);
-        await userObj.save();
-    }
-    return { deletedFollow: tid, currentFollows: userObj.follows };
+  if (userObj.follows.indexOf(tid) === -1) {
+    throw 'You are not following this topic';
+  } else {
+    const index = userObj.follows.indexOf(tid);
+    userObj.follows.splice(index, 1);
+    await userObj.save();
+  }
+  return { deletedFollow: tid, currentFollows: userObj.follows };
 }

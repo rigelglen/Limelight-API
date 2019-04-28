@@ -3,5 +3,14 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"settings": {
+		"prettier.useTabs": false,
+		"prettier.openOutput": false,
+		"prettier.trailingComma": "es5",
+		"prettier.semi": true,
+		"prettier.tabWidth": 2,
+		"python.linting.pylintEnabled": true,
+    "python.jediEnabled": true
+	}
 }

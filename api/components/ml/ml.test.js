@@ -9,10 +9,9 @@ beforeAll(populateUsers);
 beforeAll(populateTopics);
 
 describe('Machine Learning', () => {
-
   beforeAll(() => {
     jest.setTimeout(30000);
-  })
+  });
 
   afterAll(() => {
     mongoose.connection.close();
@@ -21,7 +20,6 @@ describe('Machine Learning', () => {
   });
 
   describe('GET /ml/checkClickbait', () => {
-
     test(`it should check if article url is clickbait`, (done) => {
       const url = `https://www.deccanherald.com/business/battle-of-streaming-platforms-727427.html`;
 
@@ -30,12 +28,12 @@ describe('Machine Learning', () => {
         .query({ url })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(200)
         .then((res) => done())
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
 
@@ -47,12 +45,12 @@ describe('Machine Learning', () => {
         .query({ url })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(400)
         .then((res) => done())
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
 
@@ -64,19 +62,17 @@ describe('Machine Learning', () => {
         .query({ url })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(400)
         .then((res) => done())
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
-
   });
 
   describe('GET /ml/checkSentiment', () => {
-
     test(`it should return a sentiment array`, (done) => {
       const url = `https://www.deccanherald.com/business/battle-of-streaming-platforms-727427.html`;
 
@@ -85,12 +81,12 @@ describe('Machine Learning', () => {
         .query({ url })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(200)
         .then((res) => done())
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
 
@@ -102,12 +98,12 @@ describe('Machine Learning', () => {
         .query({ url })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(400)
         .then((res) => done())
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
 
@@ -119,19 +115,17 @@ describe('Machine Learning', () => {
         .query({ url })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(400)
         .then((res) => done())
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
-
   });
 
   describe('GET /ml/getKeywords', () => {
-
     test(`it should return a keyword array based on title`, (done) => {
       const text = `Are pandas extinct`;
 
@@ -140,12 +134,12 @@ describe('Machine Learning', () => {
         .query({ text })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(200)
         .then((res) => done())
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
 
@@ -157,22 +151,18 @@ describe('Machine Learning', () => {
         .query({ text })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .set("Authorization", `Bearer ${userJwts[0]}`)
+        .set('Authorization', `Bearer ${userJwts[0]}`)
         .expect(200)
         .then((res) => {
-          if (JSON.parse(res.text).keywords.length == 1)
-            done()
+          if (JSON.parse(res.text).keywords.length == 1) done();
           else {
             throw 'Returns more than one error';
           }
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          done(err)
+          done(err);
         });
     });
-
   });
-
-
 });

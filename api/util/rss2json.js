@@ -5,30 +5,27 @@ const xml2js = require('xml2js-es6-promise');
 const axios = require('axios');
 
 module.exports = {
-  load: async function (url) {
+  load: async function(url) {
     try {
       const response = await axios({
         url: url,
         headers: {
-          accept: 'text/html,application/xhtml+xml'
-        }
+          accept: 'text/html,application/xhtml+xml',
+        },
       });
 
       if (response.status == 200) {
         const result = await xml2js(response.data, { trim: false, normalize: true, mergeAttrs: true });
         return this.parser(result);
       }
-    }
-    catch (error) {
+    } catch (error) {
       return error;
-    };
-
+    }
   },
   parser: (json) => {
     var channel = json.rss.channel;
     var rss = { items: [] };
-    if (util.isArray(json.rss.channel))
-      channel = json.rss.channel[0];
+    if (util.isArray(json.rss.channel)) channel = json.rss.channel[0];
 
     if (channel.title) {
       rss.title = channel.title[0];
@@ -40,28 +37,27 @@ module.exports = {
       rss.url = channel.link[0];
     }
 
-
     // add rss.image via @dubyajaysmith
     if (channel.image) {
-      rss.image = channel.image[0].url
+      rss.image = channel.image[0].url;
     }
 
-    if (!rss.image && channel["itunes:image"]) {
-      rss.image = channel['itunes:image'][0].href
+    if (!rss.image && channel['itunes:image']) {
+      rss.image = channel['itunes:image'][0].href;
     }
 
     rss.image = rss.image && Array.isArray(rss.image) ? rss.image[0] : '';
 
     if (channel.item) {
       if (!util.isArray(channel.item)) {
-        channel.item = [channel.item];
+        channel.item = [ channel.item ];
       }
-      channel.item.forEach(function (val) {
+      channel.item.forEach(function(val) {
         var obj = {};
         obj.title = !util.isNullOrUndefined(val.title) ? val.title[0] : '';
         obj.description = !util.isNullOrUndefined(val.description) ? val.description[0] : '';
         obj.url = obj.link = !util.isNullOrUndefined(val.link) ? val.link[0] : '';
-        obj.source = !util.isNullOrUndefined(val.source) ? val.source[0]["_"] : '';
+        obj.source = !util.isNullOrUndefined(val.source) ? val.source[0]['_'] : '';
 
         if (val['itunes:subtitle']) {
           obj.itunes_subtitle = val['itunes:subtitle'][0];
@@ -101,23 +97,18 @@ module.exports = {
         }
         if (val.enclosure) {
           obj.enclosures = [];
-          if (!util.isArray(val.enclosure))
-            val.enclosure = [val.enclosure];
-          val.enclosure.forEach(function (enclosure) {
+          if (!util.isArray(val.enclosure)) val.enclosure = [ val.enclosure ];
+          val.enclosure.forEach(function(enclosure) {
             var enc = {};
             for (var x in enclosure) {
               enc[x] = enclosure[x][0];
             }
             obj.enclosures.push(enc);
           });
-
         }
         rss.items.push(obj);
-
       });
-
     }
     return rss;
-
-  }
+  },
 };
