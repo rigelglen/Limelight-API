@@ -1,1 +1,3 @@
 * eol=lf
+*.svm binary
+*.tfidf binary
