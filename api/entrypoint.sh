@@ -20,6 +20,8 @@ done
 
 if [ $APP_ENV = "production" ]; then
   NODE_ENV=production node index.js;
-else
+elif [ $APP_ENV = "development" ]; then
   NODE_ENV=development nodemon index.js -L;
+else
+  NODE_ENV=test npm test;
 fi

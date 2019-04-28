@@ -38,11 +38,12 @@ services:
 
   app-test:
     container_name: api-test
-    command: npm test
     image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
     restart: "no"
     env_file:
       - .env
+    environment:
+      - APP_ENV=test
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -73,6 +74,7 @@ services:
     container_name: redis
     restart: unless-stopped
     image: 'bitnami/redis:latest'
+    command: /run.sh --maxmemory 100mb --maxmemory-policy allkeys-lru
     env_file:
       - .env
     ports:

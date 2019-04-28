@@ -62,7 +62,6 @@ services:
       
   app-test:
     container_name: api-test
-    command: npm test
     restart: "no"
     image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest
     environment:
@@ -125,6 +124,7 @@ services:
     container_name: redis
     restart: unless-stopped
     image: 'bitnami/redis:5.0-debian-9'
+    command: /run.sh --maxmemory 100mb --maxmemory-policy allkeys-lru
     environment:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
