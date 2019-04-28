@@ -121,3 +121,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Trained models
+
+*.svm
+*.tfidf
+*.vectorizer

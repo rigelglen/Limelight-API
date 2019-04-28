@@ -11,6 +11,7 @@
 		"prettier.semi": true,
 		"prettier.tabWidth": 2,
 		"python.linting.pylintEnabled": true,
-    "python.jediEnabled": true
+		"python.jediEnabled": true,
+		"files.eol": "\n"
 	}
 }
