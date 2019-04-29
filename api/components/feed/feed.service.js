@@ -235,9 +235,11 @@ async function addMetaDataScrape(articles) {
       return article;
     })
   );
-
-  saveToRedis(result);
-
+  try {
+    saveToRedis(result);
+  } catch (e) {
+    console.log('Error saving to redis');
+  }
   return result;
 }
 
@@ -269,7 +271,11 @@ async function addMetaDataFB(articles) {
     })
   );
 
-  saveToRedis(result);
+  try {
+    saveToRedis(result);
+  } catch (e) {
+    console.log('Error saving to redis');
+  }
 
   return result;
 }
