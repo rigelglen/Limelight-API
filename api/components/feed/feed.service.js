@@ -235,11 +235,9 @@ async function addMetaDataScrape(articles) {
       return article;
     })
   );
-  try {
-    saveToRedis(result);
-  } catch (e) {
-    console.log('Error saving to redis');
-  }
+
+  saveToRedis(result);
+
   return result;
 }
 
@@ -271,11 +269,7 @@ async function addMetaDataFB(articles) {
     })
   );
 
-  try {
-    saveToRedis(result);
-  } catch (e) {
-    console.log('Error saving to redis');
-  }
+  saveToRedis(result);
 
   return result;
 }
@@ -286,7 +280,11 @@ async function saveToRedis(articles) {
   });
 
   const flattenedArticles = _.flatten(transformedArticles);
-  setRedisMulti(flattenedArticles);
+  try {
+    setRedisMulti(flattenedArticles);
+  } catch (e) {
+    console.log('Error while saving to redis');
+  }
 }
 
 async function getFromRedis(articles) {
