@@ -16,6 +16,10 @@ buildJob:
     - docker-compose -f docker-compose.ci.yml build
     - docker login registry.gitlab.com -u $REGISTRY_USER -p $REGISTRY_PASS
     - docker-compose -f docker-compose.ci.yml push
+    - git checkout production
+    - git fetch
+    - docker-compose -f docker-compose.ci.prod.yml build
+    - docker-compose -f docker-compose.ci.prod.yml push
 
 testJob:
   stage: test
@@ -32,9 +36,6 @@ deployJob:
   tags:
     - docker
   script:
-    - docker-compose -f docker-compose.ci.prod.yml build
-    - docker login registry.gitlab.com -u $REGISTRY_USER -p $REGISTRY_PASS
-    - docker-compose -f docker-compose.ci.prod.yml push
     - apk add --no-cache openssh
     - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
