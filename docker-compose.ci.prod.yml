@@ -4,7 +4,7 @@ services:
   pyml:
     container_name: pyml
     restart: unless-stopped
-    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_pyml:latest-test
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_pyml:latest-prod
     environment:
       - APP_ENV=${APP_ENV}
       - FLASK_HOST=${FLASK_HOST}
@@ -18,7 +18,7 @@ services:
   app:
     container_name: api
     restart: unless-stopped
-    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app:latest-test
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app:latest-prod
     environment:
       - APP_ENV=${APP_ENV}
       - NODE_PORT=${NODE_PORT}
@@ -63,7 +63,7 @@ services:
   app-test:
     container_name: api-test
     restart: "no"
-    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest-test
+    image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_app_test:latest-prod
     environment:
       - APP_ENV=${APP_ENV}
       - NODE_PORT=${NODE_PORT}

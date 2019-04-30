@@ -6,6 +6,9 @@ WORKDIR /usr/app
 
 # Cache npm dependencies
 COPY requirements.txt /usr/app/
+RUN apt-get update && apt-get install -y apt-transport-https
+RUN apt-get install -y libicu-dev
+RUN apt-get install -y build-essential 
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # Copy application files

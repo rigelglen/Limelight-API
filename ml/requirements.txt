@@ -10,3 +10,6 @@ pandas==0.24.2
 vaderSentiment==3.2.1
 rake-nltk==1.0.4
 xgboost==0.82
+polyglot==16.7.4
+pycld2==0.31
+PyICU==2.3.1

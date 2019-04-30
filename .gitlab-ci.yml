@@ -32,6 +32,9 @@ deployJob:
   tags:
     - docker
   script:
+    - docker-compose -f docker-compose.ci.prod.yml build
+    - docker login registry.gitlab.com -u $REGISTRY_USER -p $REGISTRY_PASS
+    - docker-compose -f docker-compose.ci.prod.yml push
     - apk add --no-cache openssh
     - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
