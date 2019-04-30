@@ -160,18 +160,20 @@ async function getFeedByTopic(topicId, page = 1) {
         result = await addMetaData(paginate(resultData, page));
 
         // Add metadata later on to all the returned artiles
-        addMetaData(resultData)
-          .then((res) => {
-            topic.cache = res;
-            topic.lastRefreshed = new Date();
-            topic.save();
-          })
-          .then(() => {
-            // console.log("Save completed");
-          })
-          .catch((e) => {
-            // console.log("Failure in adding thumbs");
-          });
+        if (process.env.NODE_ENV !== 'test') {
+          addMetaData(resultData)
+            .then((res) => {
+              topic.cache = res;
+              topic.lastRefreshed = new Date();
+              topic.save();
+            })
+            .then(() => {
+              // console.log("Save completed");
+            })
+            .catch((e) => {
+              // console.log("Failure in adding thumbs");
+            });
+        }
       }
     }
 
@@ -236,7 +238,8 @@ async function addMetaDataScrape(articles) {
     })
   );
 
-  saveToRedis(result);
+  if (process.env.NODE_ENV === 'test') await saveToRedis(result);
+  else saveToRedis(result);
 
   return result;
 }
@@ -269,7 +272,8 @@ async function addMetaDataFB(articles) {
     })
   );
 
-  saveToRedis(result);
+  if (process.env.NODE_ENV === 'test') await saveToRedis(result);
+  else saveToRedis(result);
 
   return result;
 }
@@ -281,9 +285,9 @@ async function saveToRedis(articles) {
 
   const flattenedArticles = _.flatten(transformedArticles);
   try {
-    setRedisMulti(flattenedArticles);
+    await setRedisMulti(flattenedArticles);
   } catch (e) {
-    console.log('Error while saving to redis');
+    if (process.env.NODE_ENV !== 'test') console.log('Error while saving to redis');
   }
 }
 

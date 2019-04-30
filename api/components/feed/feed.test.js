@@ -3,8 +3,16 @@ const { populateUsers, populateTopics, topics, users, userJwts } = require('./..
 const { app } = require('./../../server');
 const { mongoose, redisClient } = require('./../../core/db');
 const { ObjectID } = require('mongodb');
+const use = require('superagent-use');
+const captureError = require('supertest-capture-error');
 
-var agent = request.agent(app);
+const agent = use(request(app)).use(
+  captureError((error, test) => {
+    // modify error message to suit our needs:
+    error.message += ` at ${test.url}\n` + `Response Body:\n${test.res.text}`;
+    error.stack = ''; // this is useless anyway
+  })
+);
 
 beforeAll(populateUsers);
 beforeAll(populateTopics);
@@ -14,10 +22,14 @@ describe('Feed', () => {
     jest.setTimeout(30000);
   });
 
-  afterAll(() => {
-    mongoose.connection.close();
-    mongoose.disconnect();
-    redisClient.quit();
+  afterAll(async () => {
+    await mongoose.connection.close();
+    await mongoose.disconnect();
+    await new Promise((resolve, reject) => {
+      redisClient.quit(() => {
+        resolve();
+      });
+    });
   });
 
   describe('GET /feed/getFeed', () => {
@@ -31,7 +43,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -46,7 +57,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -61,7 +71,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -78,7 +87,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -93,7 +101,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -108,7 +115,6 @@ describe('Feed', () => {
         .expect(400)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -126,7 +132,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -143,7 +148,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -161,7 +165,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -178,7 +181,6 @@ describe('Feed', () => {
         .expect(200)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });
@@ -195,7 +197,6 @@ describe('Feed', () => {
         .expect(400)
         .then((res) => done())
         .catch((err) => {
-          console.log(err);
           done(err);
         });
     });

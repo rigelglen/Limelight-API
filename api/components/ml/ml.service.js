@@ -15,7 +15,7 @@ async function getWritingStyle(url) {
     });
     return response.data;
   } catch (e) {
-    if (e.response.data.message) throw e.response.data.message;
+    if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
   }
 }
@@ -27,7 +27,7 @@ async function getClickbait(url) {
     });
     return response.data;
   } catch (e) {
-    if (e.response.data.message) throw e.response.data.message;
+    if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
   }
 }
@@ -44,7 +44,7 @@ async function getSentiment(url) {
       neutral: response.data.neu,
     };
   } catch (e) {
-    if (e.response.data.message) throw e.response.data.message;
+    if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
   }
 }
@@ -71,7 +71,7 @@ async function getClassification(url) {
       },
     };
   } catch (e) {
-    if (e.response.data.message) throw e.response.data.message;
+    if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
   }
 }
@@ -84,7 +84,7 @@ async function getKeywords(text) {
       });
       return response.data;
     } catch (e) {
-      if (e.response.data.message) throw e.response.data.message;
+      if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
       throw 'Could not fetch keywords';
     }
   } else {
