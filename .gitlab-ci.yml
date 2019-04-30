@@ -15,7 +15,7 @@ buildJob:
   script:
     - docker-compose -f docker-compose.ci.yml build
     - apk update && apk add git
-    - docker login registry.gitlab.com -u $REGISTRY_USER -p $REGISTRY_PASS
+    - echo $REGISTRY_PASS | docker login registry.gitlab.com -u $REGISTRY_USER --password-stdin
     - docker-compose -f docker-compose.ci.yml push
     - git checkout production
     - git fetch
