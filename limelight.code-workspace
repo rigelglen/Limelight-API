@@ -11,7 +11,8 @@
 		"prettier.semi": true,
 		"prettier.tabWidth": 2,
 		"python.linting.pylintEnabled": true,
-		"python.jediEnabled": false,
+		"python.jediEnabled": true,
+		"vsintellicode.python.completionsEnabled": false,
 		"files.eol": "\n",
 		"editor.tabSize": 2
 	}
