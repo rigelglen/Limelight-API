@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=development nodemon ./index.js",
-    "test": "NODE_ENV=test jest -i --verbose --colors",
+    "test": "NODE_ENV=test jest --colors --verbose",
     "start-dev": "nodemon ./index.js"
   },
   "dependencies": {
