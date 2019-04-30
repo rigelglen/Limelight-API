@@ -9,3 +9,4 @@ lxml==4.3.3
 pandas==0.24.2
 vaderSentiment==3.2.1
 rake-nltk==1.0.4
+xgboost==0.82

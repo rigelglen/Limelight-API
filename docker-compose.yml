@@ -27,7 +27,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "3002:8080"
     networks:
       - mainnet
     volumes:

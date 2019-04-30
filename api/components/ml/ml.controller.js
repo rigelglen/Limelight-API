@@ -3,6 +3,7 @@ const mlService = require('./ml.service');
 const router = express.Router();
 
 router.get('/checkClickbait', validateUrl, getClickbait);
+router.get('/checkWritingStyle', validateUrl, getWritingStyle);
 router.get('/checkSentiment', validateUrl, getSentiment);
 router.get('/getKeywords', getKeywords);
 router.get('/getClassification', validateUrl, getClassification);
@@ -12,6 +13,13 @@ module.exports = router;
 function getClickbait(req, res, next) {
   mlService
     .getClickbait(addHttp(req.query.url))
+    .then((data) => (data ? res.json(data) : res.status(400).json({ message: 'An error occured.' })))
+    .catch((err) => next(err));
+}
+
+function getWritingStyle(req, res, next) {
+  mlService
+    .getWritingStyle(addHttp(req.query.url))
     .then((data) => (data ? res.json(data) : res.status(400).json({ message: 'An error occured.' })))
     .catch((err) => next(err));
 }

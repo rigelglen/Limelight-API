@@ -19,6 +19,112 @@ describe('Machine Learning', () => {
     redisClient.quit();
   });
 
+  describe('GET /ml/checkWritingStyle', () => {
+    test(`it should check if article url is written like a fake article`, (done) => {
+      const url = `https://www.deccanherald.com/business/battle-of-streaming-platforms-727427.html`;
+
+      agent
+        .get('/ml/checkWritingStyle')
+        .query({ url })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${userJwts[0]}`)
+        .expect(200)
+        .then((res) => done())
+        .catch((err) => {
+          console.log(err);
+          done(err);
+        });
+    });
+
+    test(`it should error if url is not valid`, (done) => {
+      const url = `https://deccandherald/business/battle-of-streaming-platforms-727427.html`;
+
+      agent
+        .get('/ml/checkWritingStyle')
+        .query({ url })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${userJwts[0]}`)
+        .expect(400)
+        .then((res) => done())
+        .catch((err) => {
+          console.log(err);
+          done(err);
+        });
+    });
+
+    test(`it should error if url is not found`, (done) => {
+      const url = `https://deccandherald.com/busasdasdasdadiness/battle-of-streaming-platforms-727427.html`;
+
+      agent
+        .get('/ml/checkWritingStyle')
+        .query({ url })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${userJwts[0]}`)
+        .expect(400)
+        .then((res) => done())
+        .catch((err) => {
+          console.log(err);
+          done(err);
+        });
+    });
+  });
+
+  describe('GET /ml/getClassification', () => {
+    test(`it should return the classification report`, (done) => {
+      const url = `https://www.deccanherald.com/business/battle-of-streaming-platforms-727427.html`;
+
+      agent
+        .get('/ml/getClassification')
+        .query({ url })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${userJwts[0]}`)
+        .expect(200)
+        .then((res) => done())
+        .catch((err) => {
+          console.log(err);
+          done(err);
+        });
+    });
+
+    test(`it should error if url is not valid`, (done) => {
+      const url = `https://deccandherald/business/battle-of-streaming-platforms-727427.html`;
+
+      agent
+        .get('/ml/getClassification')
+        .query({ url })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${userJwts[0]}`)
+        .expect(400)
+        .then((res) => done())
+        .catch((err) => {
+          console.log(err);
+          done(err);
+        });
+    });
+
+    test(`it should error if url is not found`, (done) => {
+      const url = `https://deccandherald.com/busasdasdasdadiness/battle-of-streaming-platforms-727427.html`;
+
+      agent
+        .get('/ml/getClassification')
+        .query({ url })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${userJwts[0]}`)
+        .expect(400)
+        .then((res) => done())
+        .catch((err) => {
+          console.log(err);
+          done(err);
+        });
+    });
+  });
+
   describe('GET /ml/checkClickbait', () => {
     test(`it should check if article url is clickbait`, (done) => {
       const url = `https://www.deccanherald.com/business/battle-of-streaming-platforms-727427.html`;

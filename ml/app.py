@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, make_response
 from waitress import serve
 
 from clickbait import classifier as clickbait_clf
+from writing import classifier as writing_clf
 from sentiment import sentiment as senti
 from keywords import keywords as key
 
@@ -28,7 +29,8 @@ def classify():
         title, text = article_util.get_article(url)
         resClickBait = clickbait_clf.get_classifier().classify(title)
         resSenti = senti.sentiment_analyzer_scores(text)
-        res = {"clickbait": resClickBait, "sentiment": resSenti}
+        resWriting = writing_clf.get_classifier().classify(text)
+        res = {"clickbait": resClickBait, "sentiment": resSenti, "writing": resWriting}
 
         return jsonify(res)
     except ValueError as e:
@@ -43,7 +45,6 @@ def clickbait():
         url = request.args.get('url')
         title, _ = article_util.get_article(url)
         res = clickbait_clf.get_classifier().classify(title)
-        print(res)
         return jsonify(res)
     except ValueError as e:
         return make_response(jsonify(message=str(e)), 400)
@@ -57,6 +58,19 @@ def sentiment():
         url = request.args.get('url')
         _, text = article_util.get_article(url)
         res = senti.sentiment_analyzer_scores(text)
+        return jsonify(res)
+    except ValueError as e:
+        return make_response(jsonify(message=str(e)), 400)
+
+
+@app.route('/writing')
+def writing():
+    if 'url' not in request.args:
+        return make_response(jsonify(message="Please pass a url"), 400)
+    try:
+        url = request.args.get('url')
+        _, text = article_util.get_article(url)
+        res = writing_clf.get_classifier().classify(text)
         return jsonify(res)
     except ValueError as e:
         return make_response(jsonify(message=str(e)), 400)
@@ -76,6 +90,8 @@ def keywords():
 port = int(os.getenv('FLASK_PORT'))
 
 debugFlag = True
+
+print('Flask is starting...')
 
 if(os.getenv('APP_ENV') == 'production'):
     debugFlag = False

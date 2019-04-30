@@ -5,7 +5,19 @@ module.exports = {
   getClickbait,
   getKeywords,
   getClassification,
+  getWritingStyle,
 };
+
+async function getWritingStyle(url) {
+  try {
+    const response = await axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/writing`, {
+      params: { url },
+    });
+    return response.data;
+  } catch (e) {
+    throw 'Could not fetch report';
+  }
+}
 
 async function getClickbait(url) {
   try {
@@ -49,6 +61,10 @@ async function getClassification(url) {
         negative: response.data.sentiment.neg * 100,
         positive: response.data.sentiment.pos * 100,
         neutral: response.data.sentiment.neu * 100,
+      },
+      writing: {
+        fake: response.data.writing.fake * 100,
+        real: response.data.writing.real * 100,
       },
     };
   } catch (e) {
