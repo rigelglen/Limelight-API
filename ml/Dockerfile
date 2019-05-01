@@ -18,4 +18,4 @@ EXPOSE 3001
 
 RUN chmod 644 app.py
 
-CMD ["python", "app.py"]
+CMD ["sh", "entrypoint.sh"]
