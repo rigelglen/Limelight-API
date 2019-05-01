@@ -7,6 +7,7 @@ services:
     image: registry.gitlab.com/mirandajyothy/limelight_api/limelight_api_pyml:latest-prod
     environment:
       - APP_ENV=${APP_ENV}
+      - FLASK_ENV=${APP_ENV}
       - FLASK_HOST=${FLASK_HOST}
       - FLASK_PORT=${FLASK_PORT}
     build:

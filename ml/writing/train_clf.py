@@ -11,21 +11,34 @@ import pickle
 import pandas as pd
 import os.path as path
 
+USE_POS_TAG = True
+nltk.download('averaged_perceptron_tagger')
+
+
+def prepare_text(text):
+    if USE_POS_TAG == True:
+        return ' '.join(map(itemgetter(1), nltk.pos_tag(nltk.word_tokenize(text.lower()))))
+    return text
+
 
 def train():
-    df = pd.read_csv(path.join(path.dirname(
-        __file__), 'data/scrapeResult.csv'))
+    if USE_POS_TAG:
+        df = pd.read_csv(path.join(path.dirname(
+            __file__), 'data/scrapeResultPOS.csv'))
+    else:
+        df = pd.read_csv(path.join(path.dirname(
+            __file__), 'data/scrapeResult.csv'))
 
-    missing_rows = []
-    
-    for i in range(len(df)):
-        if df.loc[i, 'text'] != df.loc[i, 'text']:
-            missing_rows.append(i)
+    # missing_rows = []
 
-    df = df.drop(missing_rows).reset_index().drop(['index', 'id'], axis=1)
+    # for i in range(len(df)):
+    #     if df.loc[i, 'text'] != df.loc[i, 'text']:
+    #         missing_rows.append(i)
 
-    df = df.drop_duplicates(subset='text', keep='first')
-    df = df.drop_duplicates(subset='link', keep='first')
+    # df = df.drop(missing_rows).reset_index().drop(['index', 'id'], axis=1)
+
+    # df = df.drop_duplicates(subset='text', keep='first')
+    # df = df.drop_duplicates(subset='link', keep='first')
 
     count_fake = 0
     count_real = 0
@@ -45,8 +58,6 @@ def train():
     # Set `y`
     y = df.label
 
-
-
     # Drop the `label` column
     df.drop("label", axis=1)
 
@@ -55,13 +66,21 @@ def train():
         df['text'], y, test_size=0.2, random_state=53)
 
     # Initialize the `tfidf_vectorizer`
-    vectorizer = TfidfVectorizer(sublinear_tf=True,
-                                 ngram_range=(1, 2),
-                                 stop_words='english',
-                                 max_df=0.8,
-                                 min_df=0.01,
-                                 max_features=5000,
-                                 strip_accents='unicode')
+    if USE_POS_TAG:
+        vectorizer = TfidfVectorizer(ngram_range=(1, 3),
+                                     stop_words='english',
+                                     min_df=2,
+                                     norm='l2',
+                                     strip_accents='unicode',
+                                     lowercase=True)
+    else:
+        vectorizer = TfidfVectorizer(sublinear_tf=True,
+                                     ngram_range=(1, 2),
+                                     stop_words='english',
+                                     max_df=0.8,
+                                     min_df=0.01,
+                                     max_features=5000,
+                                     strip_accents='unicode')
 
     # Fit and transform the training data
     X_train = vectorizer.fit_transform(X_train)
@@ -77,12 +96,21 @@ def train():
     print("Classification Report")
     print(metrics.classification_report(Y_test, Y_predicted))
 
-    modelFile = path.join(path.dirname(__file__), "model.xgb")
+    if(USE_POS_TAG):
+        modelFile = path.join(path.dirname(__file__), "model-POS.xgb")
+    else:
+        modelFile = path.join(path.dirname(__file__), "model.xgb")
     outfile = open(modelFile, 'wb')
     pickle.dump(clf, outfile)
     outfile.close()
 
-    vectorizerFile = path.join(path.dirname(__file__), "vectorizer.tfidf")
+    if(USE_POS_TAG):
+        vectorizerFile = path.join(
+            path.dirname(__file__), "vectorizer-POS.tfidf")
+    else:
+        vectorizerFile = path.join(
+            path.dirname(__file__), "vectorizer.tfidf")
+
     outfile = open(vectorizerFile, 'wb')
     pickle.dump(vectorizer, outfile)
     outfile.close()
