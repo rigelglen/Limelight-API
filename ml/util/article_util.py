@@ -2,20 +2,14 @@ from newspaper import Article, ArticleException
 from polyglot.detect import Detector
 import json
 from datetime import date
+import functools
+from aioify import aioify
 
 
 class ArticleError(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.message = message
-
-
-# def serialize(obj):
-#     if isinstance(obj, date):
-#         serial = obj.isoformat()
-#         return serial
-
-#     return obj.__dict__
 
 
 def get_article(url):
@@ -37,3 +31,6 @@ def get_article(url):
         raise ValueError(e.message)
     except AttributeError as e:
         raise ValueError('Link is not an article')
+
+
+async_get_article = aioify(obj=get_article)
