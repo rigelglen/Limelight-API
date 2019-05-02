@@ -33,7 +33,7 @@ function getSentiment(req, res, next) {
 
 function getKeywords(req, res, next) {
   mlService
-    .getKeywords(req.query.text)
+    .getKeywords(req.user.sub, req.query.text)
     .then((data) => (data ? res.json(data) : res.status(400).json({ message: 'An error occured.' })))
     .catch((err) => next(err));
 }

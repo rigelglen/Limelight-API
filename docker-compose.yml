@@ -13,7 +13,7 @@ services:
     networks:
       - mainnet
     ports:
-      - "3001:3001"
+      - "4003:3001"
     volumes:
       - ./ml:/usr/app/
 
@@ -27,7 +27,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "3002:8080"
+      - "4002:8080"
     networks:
       - mainnet
     volumes:

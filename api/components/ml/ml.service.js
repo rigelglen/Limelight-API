@@ -1,4 +1,8 @@
 const axios = require('axios');
+const db = require('./../../core/db');
+const Topic = db.Topic;
+const User = db.User;
+const _ = require('lodash');
 
 const { disclaimer, clickbaitMessage, writingMessage, sentimentMessage } = require('../../core/strings');
 
@@ -117,18 +121,41 @@ async function getClassification(url) {
   }
 }
 
-async function getKeywords(text) {
+async function getKeywords(uid, text) {
+  text = text.trim().toLowerCase();
   if (text.split(' ').length > 1) {
     try {
-      const response = await axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/keywords`, {
+      let userObj = User.findById(uid);
+      let response = axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/keywords`, {
         params: { text },
       });
-      return response.data;
+      [ userObj, response ] = await Promise.all([ userObj, response ]);
+
+      let tp = await Topic.find({ name: { $in: response.data.keywords } }).select('name _id');
+
+      const keywordsFollowed = tp
+        .map((topic) => {
+          if (userObj.follows.indexOf(topic._id) !== -1) {
+            return topic.name;
+          } else {
+            return undefined;
+          }
+        })
+        .filter((n) => n);
+      const finalFilter = response.data.keywords.filter((keyword) => !keywordsFollowed.includes(keyword));
+      return { keywords: finalFilter };
     } catch (e) {
       if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
       throw 'Could not fetch keywords';
     }
   } else {
-    return { keywords: [ text ] };
+    let userObj = User.findById(uid);
+    let tp = Topic.findOne({ name: text }).select('-cache');
+    [ userObj, tp ] = await Promise.all([ userObj, tp ]);
+    if (tp && userObj.follows.indexOf(tp._id) !== -1) {
+      return { keywords: [] };
+    } else {
+      return { keywords: [ text ] };
+    }
   }
 }

@@ -9,7 +9,7 @@ const schema = new Schema({
   firstName: { type: String, required: false },
   lastName: { type: String, required: false },
   createdDate: { type: Date, default: Date.now },
-  follows: [ { type: Schema.ObjectId } ],
+  follows: { type: [ Schema.ObjectId ], default: [] },
 });
 
 schema.pre('save', function(next) {
