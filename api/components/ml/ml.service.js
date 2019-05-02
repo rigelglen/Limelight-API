@@ -3,6 +3,11 @@ const db = require('./../../core/db');
 const Topic = db.Topic;
 const User = db.User;
 const _ = require('lodash');
+const writingStyleUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/writing`;
+const clickbaitUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/clickbait`;
+const sentimentUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/sentiment`;
+const classificationUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/classify`;
+const keywordsUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/keywords`;
 
 const { disclaimer, clickbaitMessage, writingMessage, sentimentMessage } = require('../../core/strings');
 
@@ -16,7 +21,7 @@ module.exports = {
 
 async function getWritingStyle(url) {
   try {
-    const response = await axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/writing`, {
+    const response = await axios.get(writingStyleUrl, {
       params: { url },
     });
     const fake = response.data.fake * 100;
@@ -24,7 +29,7 @@ async function getWritingStyle(url) {
     return {
       real,
       fake,
-      message: writingMessage[parseInt(real / 20)],
+      message: writingMessage[parseInt(real / 10)],
     };
   } catch (e) {
     if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
@@ -34,7 +39,7 @@ async function getWritingStyle(url) {
 
 async function getClickbait(url) {
   try {
-    const response = await axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/clickbait`, {
+    const response = await axios.get(clickbaitUrl, {
       params: { url },
     });
     const clickbait = response.data.clickbait * 100;
@@ -53,7 +58,7 @@ async function getClickbait(url) {
 
 async function getSentiment(url) {
   try {
-    const response = await axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/sentiment`, {
+    const response = await axios.get(sentimentUrl, {
       params: { url },
     });
     const compound = response.data.compound * 100;
@@ -79,7 +84,7 @@ async function getSentiment(url) {
 
 async function getClassification(url) {
   try {
-    const response = await axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/classify`, {
+    const response = await axios.get(classificationUrl, {
       params: { url },
     });
 
@@ -112,7 +117,7 @@ async function getClassification(url) {
       writing: {
         fake,
         real,
-        message: writingMessage[parseInt(real / 20)],
+        message: writingMessage[parseInt(real / 10)],
       },
     };
   } catch (e) {
@@ -126,7 +131,7 @@ async function getKeywords(uid, text) {
   if (text.split(' ').length > 1) {
     try {
       let userObj = User.findById(uid);
-      let response = axios.get(`http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/keywords`, {
+      let response = axios.get(keywordsUrl, {
         params: { text },
       });
       [ userObj, response ] = await Promise.all([ userObj, response ]);
