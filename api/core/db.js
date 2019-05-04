@@ -12,8 +12,9 @@ const dbOptions = {
   reconnectTries: 5,
 };
 let redisClient;
-let getRedis;
-let setRedis;
+let redisClientReport;
+let getRedisReport;
+let setRedisReport;
 let getRedisMulti;
 let setRedisMulti;
 try {
@@ -22,8 +23,16 @@ try {
     port: process.env.REDIS_PORT,
     auth_pass: process.env.REDIS_PASSWORD,
   });
-  getRedis = promisify(redisClient.get).bind(redisClient);
-  setRedis = promisify(redisClient.set).bind(redisClient);
+
+  redisClientReport = redis.createClient({
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    auth_pass: process.env.REDIS_PASSWORD,
+    db: 1,
+  });
+
+  getRedisReport = promisify(redisClientReport.get).bind(redisClientReport);
+  setRedisReport = promisify(redisClientReport.set).bind(redisClientReport);
   getRedisMulti = promisify(redisClient.mget).bind(redisClient);
   setRedisMulti = promisify(redisClient.mset).bind(redisClient);
   // redisClient.on('connect', () => console.log('Successfully connected to redis!'));
@@ -46,8 +55,8 @@ module.exports = {
   User,
   Topic,
   mongoose,
-  setRedis,
-  getRedis,
+  setRedisReport,
+  getRedisReport,
   redisClient,
   getRedisMulti,
   setRedisMulti,

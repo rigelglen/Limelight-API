@@ -62,7 +62,7 @@ services:
     container_name: redis
     restart: unless-stopped
     image: 'bitnami/redis:5.0-debian-9'
-    command: /run.sh --maxmemory 100mb --maxmemory-policy allkeys-lru
+    command: /run.sh --maxmemory 100mb --maxmemory-policy allkeys-lru --save "" --appendonly no
     env_file:
       - .env
     ports:

@@ -3,6 +3,8 @@ const db = require('./../../core/db');
 const Topic = db.Topic;
 const User = db.User;
 const _ = require('lodash');
+const { getRedisReport, setRedisReport } = require('../../core/db');
+
 const writingStyleUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/writing`;
 const clickbaitUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/clickbait`;
 const sentimentUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/sentiment`;
@@ -84,6 +86,11 @@ async function getSentiment(url) {
 
 async function getClassification(url) {
   try {
+    const reportRedis = await getRedisReport(url);
+    if (reportRedis) {
+      return JSON.parse(reportRedis);
+    }
+
     const response = await axios.get(classificationUrl, {
       params: { url },
     });
@@ -100,7 +107,7 @@ async function getClassification(url) {
     const sentiMessage =
       sentimentMessage[[ negative, neutral, positive ].indexOf(Math.max(...[ negative, neutral, positive ]))];
 
-    return {
+    const report = {
       disclaimer,
       clickbait: {
         clickbait,
@@ -120,6 +127,10 @@ async function getClassification(url) {
         message: writingMessage[parseInt(real / 10)],
       },
     };
+
+    await setRedisReport(url, JSON.stringify(report));
+
+    return report;
   } catch (e) {
     if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
