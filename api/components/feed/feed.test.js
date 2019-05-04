@@ -1,7 +1,7 @@
 const request = require('supertest');
 const { populateUsers, populateTopics, topics, users, userJwts } = require('./../../util/test.seed');
 const { app } = require('./../../server');
-const { mongoose, redisClient } = require('./../../core/db');
+const { mongoose, redisClient, redisClientReport } = require('./../../core/db');
 const { ObjectID } = require('mongodb');
 const use = require('superagent-use');
 const captureError = require('supertest-capture-error');
@@ -14,8 +14,8 @@ const agent = use(request(app)).use(
   })
 );
 
-beforeAll(populateUsers);
-beforeAll(populateTopics);
+beforeEach(populateUsers);
+beforeEach(populateTopics);
 
 describe('Feed', () => {
   beforeAll(() => {
@@ -27,6 +27,11 @@ describe('Feed', () => {
     await mongoose.disconnect();
     await new Promise((resolve, reject) => {
       redisClient.quit(() => {
+        resolve();
+      });
+    });
+    await new Promise((resolve, reject) => {
+      redisClientReport.quit(() => {
         resolve();
       });
     });

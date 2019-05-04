@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const targetUrl = `http://localhost:3002/ml/getClassification?url=https://www.xda-developers.com/repurpose-old-android-phone-dash-cam/`;
+const targetUrl = `http://localhost:4002/feed/getFeed?page=1`;
 
 // const targetUrl = `https://limelightapp.ml`;
 
@@ -11,15 +11,15 @@ const targetUrl = `http://localhost:3002/ml/getClassification?url=https://www.xd
 (async () => {
   try {
     let r = [];
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 1000; i++) {
       r.push(
         axios.get(targetUrl, {
           headers: {
             Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1Y2I2YzBkYWFlYzA5YTAwMTUzNDVmNzgiLCJpYXQiOjE1NTYzODg2NDJ9.doS4a_LUSk2nU6WRyoHcvhFegj1QfkC0b5tNHjh6pp4`,
           },
-          validateStatus: function(status) {
-            return status >= 200 && status < 500; // default
-          },
+          // validateStatus: function(status) {
+          //   return status >= 200 && status < 500; // default
+          // },
         })
       );
     }
@@ -33,6 +33,7 @@ const targetUrl = `http://localhost:3002/ml/getClassification?url=https://www.xd
     await Promise.all(r);
     console.timeEnd('Time taken');
   } catch (e) {
+    console.log(JSON.stringify(e.response.data, null, 2));
     console.log('timeout exceeded' + e);
   }
 })();

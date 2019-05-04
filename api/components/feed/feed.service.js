@@ -5,7 +5,7 @@ const moment = require('moment');
 const newsApiKey = process.env.NEWS_API_KEY;
 const NewsAPI = require('newsapi');
 const newsapi = new NewsAPI(newsApiKey);
-const Feed = require('./../../util/rss2json');
+const Feed = require('../../util/rss2json');
 const h2p = require('html2plaintext');
 const numArticles = process.env.NUM_ARTICLES;
 const gNews = process.env.GNEWS === 'true';
@@ -15,6 +15,7 @@ const facebookKey = process.env.FACEBOOK_KEY;
 const axios = require('axios');
 const { getRedisMulti, setRedisMulti } = require('../../core/db');
 const _ = require('lodash');
+const logger = require('./../../core/logger');
 
 const metascraper = require('metascraper')([
   require('metascraper-title')(),
@@ -109,8 +110,7 @@ async function queryNewsApi(queryString) {
     });
     return result;
   } catch (e) {
-    // console.log(e);
-    return [];
+    throw 'Could not fetch articles';
   }
 }
 
@@ -133,10 +133,9 @@ async function queryGNews(queryString, isCat) {
         publishedAt: article.created,
       };
     });
-
     return result;
   } catch (err) {
-    return err;
+    throw 'Could not fetch articles';
   }
 }
 
@@ -147,7 +146,7 @@ async function getFeedByTopic(topicId, page = 1) {
   const lastRefreshedDate = moment(topic.lastRefreshed);
   const currentRefreshDate = moment();
 
-  // console.log(`Diff greater than 30mins => ${currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30}`)
+  logger.verbose(`Diff greater than 30mins => ${currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30}`);
 
   if (currentRefreshDate.diff(lastRefreshedDate, 'minutes') > 30 || !topic.cache) {
     // When cache is invalid
@@ -168,10 +167,10 @@ async function getFeedByTopic(topicId, page = 1) {
               topic.save();
             })
             .then(() => {
-              // console.log("Save completed");
+              logger.verbose('Save completed');
             })
             .catch((e) => {
-              // console.log("Failure in adding thumbs");
+              logger.verbose('Failure in adding thumbs');
             });
         }
       }
@@ -187,7 +186,7 @@ async function getFeedByTopic(topicId, page = 1) {
       await topic.save();
     }
   } else if (topic.cache) {
-    // console.log("From cache");
+    logger.verbose('From cache');
     result = paginate(topic.cache, page);
   }
 
@@ -254,7 +253,6 @@ async function addMetaDataFB(articles) {
           const response = await axios.post(
             `https://graph.facebook.com/v3.2/?scrape=true&id=${article.link}&access_token=${facebookKey}`
           );
-          // console.log(response.data);
           const imgUrl = response.data.image[0].secure_url
             ? response.data.image[0].secure_url
             : response.data.image[0].url;
@@ -284,17 +282,24 @@ async function saveToRedis(articles) {
   });
 
   const flattenedArticles = _.flatten(transformedArticles);
-  try {
-    await setRedisMulti(flattenedArticles);
-  } catch (e) {
-    if (process.env.NODE_ENV !== 'test') console.log('Error while saving to redis');
+  if (flattenedArticles.length > 0) {
+    try {
+      await setRedisMulti(flattenedArticles);
+    } catch (e) {
+      if (process.env.NODE_ENV !== 'test') logger.error(`Error saving to redis.`);
+    }
   }
 }
 
 async function getFromRedis(articles) {
   const articleLinks = articles.map((article) => article.link);
   const mapRedis = new Map();
-  const resRedisMulti = await getRedisMulti(articleLinks);
+  let resRedisMulti;
+  try {
+    resRedisMulti = await getRedisMulti(articleLinks);
+  } catch (e) {
+    resRedisMulti = [];
+  }
   const jsonRedis = resRedisMulti.filter((n) => n).map((article) => JSON.parse(article));
 
   jsonRedis.forEach((article) => {

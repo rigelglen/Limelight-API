@@ -1,6 +1,7 @@
 api/node_modules
 api/npm-debug.log
 api/*.env
+api/error.log
 Dockerfile*
 docker-compose*
 .dockerignore

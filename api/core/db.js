@@ -3,6 +3,7 @@ const User = require('./../components/users/user.model');
 const Topic = require('./../components/topic/topic.model');
 const redis = require('redis');
 const { promisify } = require('util');
+const logger = require('./logger');
 
 mongoose.Promise = global.Promise;
 const dbOptions = {
@@ -35,13 +36,14 @@ try {
   setRedisReport = promisify(redisClientReport.set).bind(redisClientReport);
   getRedisMulti = promisify(redisClient.mget).bind(redisClient);
   setRedisMulti = promisify(redisClient.mset).bind(redisClient);
-  // redisClient.on('connect', () => console.log('Successfully connected to redis!'));
+  if (process.env.NODE_ENV === 'development')
+    redisClient.on('connect', () => logger.info('Successfully connected to redis!'));
 } catch (e) {
   console.error(e);
 }
 
 const url =
-  process.env.NODE_ENV == 'test'
+  process.env.NODE_ENV === 'test'
     ? `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env
         .MONGO_HOST}/${process.env.MONGODB_DB_TEST}?authSource=admin`
     : `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env
@@ -58,6 +60,7 @@ module.exports = {
   setRedisReport,
   getRedisReport,
   redisClient,
+  redisClientReport,
   getRedisMulti,
   setRedisMulti,
 };

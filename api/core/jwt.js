@@ -11,6 +11,10 @@ function jwt() {
       '/users/authenticate',
       '/users/register',
       '/feed/getFeedBySearch',
+      '/ml/getClassification',
+      '/ml/checkClickbait',
+      '/ml/checkWriting',
+      '/ml/checkSentiment',
     ],
   });
 }

@@ -19,9 +19,9 @@ do
 done
 
 if [ $APP_ENV = "production" ]; then
-  NODE_ENV=production node index.js;
+  NODE_ENV=production npx pm2 start ecosystem.config.js --no-daemon;
 elif [ $APP_ENV = "development" ]; then
-  NODE_ENV=development nodemon index.js -L;
+  NODE_ENV=development npx pm2 start ecosystem.config.js --no-daemon;
 else
-  NODE_ENV=test npm test;
+  NODE_ENV=test npx jest -i --verbose --colors;
 fi
