@@ -20,6 +20,7 @@
     "dotenv": "^8.0.0",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1",
+    "helmet": "^3.17.0",
     "html2plaintext": "^2.1.2",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.11",
@@ -41,7 +42,6 @@
   },
   "devDependencies": {
     "jest": "^24.7.1",
-    "nodemon": "^1.19.0",
     "superagent": "^5.0.5",
     "superagent-use": "^0.1.0",
     "supertest": "^4.0.2",

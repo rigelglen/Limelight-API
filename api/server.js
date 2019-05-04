@@ -6,6 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const jwt = require('./core/jwt');
 const errorHandler = require('./core/error-handler');
+const helmet = require('helmet');
 
 if (process.env.NODE_ENV === 'development') {
   const morgan = require('morgan');
@@ -15,6 +16,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
+app.use(helmet());
 
 // use JWT auth to secure the api
 app.use(jwt());
