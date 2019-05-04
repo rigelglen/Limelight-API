@@ -55,6 +55,26 @@ async def classify(request):
         return json({"message": str(e)}, 400)
 
 
+@app.route('/classifyText')
+async def classifyText(request):
+    if 'title' not in request.query_params:
+        return json({"message": "Please pass a title"}, 400)
+    if 'text' not in request.query_params:
+        return json({"message": "Please pass text"}, 400)
+
+    try:
+        title = request.query_params.get('title')
+        text = request.query_params.get('text')
+        resClickBait = clickbait_clf.get_classifier().classify(title)
+        resSenti = senti.sentiment_analyzer_scores(text)
+        resWriting = writing_clf.get_classifier().classify(text)
+        res = {"clickbait": resClickBait,
+               "sentiment": resSenti, "writing": resWriting}
+        return json(res)
+    except ValueError as e:
+        return json({"message": str(e)}, 400)
+
+
 @app.route('/clickbait')
 async def clickbait(request):
     if 'url' not in request.query_params:

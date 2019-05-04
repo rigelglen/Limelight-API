@@ -7,6 +7,7 @@ router.get('/checkWritingStyle', validateUrl, getWritingStyle);
 router.get('/checkSentiment', validateUrl, getSentiment);
 router.get('/getKeywords', getKeywords);
 router.get('/getClassification', validateUrl, getClassification);
+router.get('/getClassificationText', getClassificationText);
 
 module.exports = router;
 
@@ -41,6 +42,13 @@ function getKeywords(req, res, next) {
 function getClassification(req, res, next) {
   mlService
     .getClassification(addHttp(req.query.url))
+    .then((data) => (data ? res.json(data) : res.status(400).json({ message: 'An error occured.' })))
+    .catch((err) => next(err));
+}
+
+function getClassificationText(req, res, next) {
+  mlService
+    .getClassificationText(req.query.title, req.query.text)
     .then((data) => (data ? res.json(data) : res.status(400).json({ message: 'An error occured.' })))
     .catch((err) => next(err));
 }

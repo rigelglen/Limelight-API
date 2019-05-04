@@ -12,6 +12,7 @@ function jwt() {
       '/users/register',
       '/feed/getFeedBySearch',
       '/ml/getClassification',
+      '/ml/getClassificationText',
       '/ml/checkClickbait',
       '/ml/checkWriting',
       '/ml/checkSentiment',

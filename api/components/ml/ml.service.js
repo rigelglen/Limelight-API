@@ -9,6 +9,7 @@ const writingStyleUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PO
 const clickbaitUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/clickbait`;
 const sentimentUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/sentiment`;
 const classificationUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/classify`;
+const classificationTextUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/classifyText`;
 const keywordsUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/keywords`;
 
 const { disclaimer, clickbaitMessage, writingMessage, sentimentMessage } = require('../../core/strings');
@@ -18,6 +19,7 @@ module.exports = {
   getClickbait,
   getKeywords,
   getClassification,
+  getClassificationText,
   getWritingStyle,
 };
 
@@ -78,6 +80,52 @@ async function getSentiment(url) {
       neutral,
       message: sentiMessage,
     };
+  } catch (e) {
+    if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
+    throw 'Could not fetch report';
+  }
+}
+
+async function getClassificationText(title, text) {
+  try {
+    const response = await axios.get(classificationTextUrl, {
+      params: { title, text },
+    });
+
+    const clickbait = response.data.clickbait.clickbait * 100;
+    const news = response.data.clickbait.news * 100;
+    const compound = response.data.sentiment.compound * 100;
+    const negative = response.data.sentiment.neg * 100;
+    const positive = response.data.sentiment.pos * 100;
+    const neutral = response.data.sentiment.neu * 100;
+    const fake = response.data.writing.fake * 100;
+    const real = response.data.writing.real * 100;
+
+    const sentiMessage =
+      sentimentMessage[[ negative, neutral, positive ].indexOf(Math.max(...[ negative, neutral, positive ]))];
+
+    const report = {
+      disclaimer,
+      clickbait: {
+        clickbait,
+        news,
+        message: clickbaitMessage[parseInt(clickbait / 20)],
+      },
+      sentiment: {
+        compound,
+        negative,
+        positive,
+        neutral,
+        message: sentiMessage,
+      },
+      writing: {
+        fake,
+        real,
+        message: writingMessage[parseInt(real / 10)],
+      },
+    };
+
+    return report;
   } catch (e) {
     if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
