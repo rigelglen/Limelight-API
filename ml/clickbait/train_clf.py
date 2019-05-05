@@ -9,8 +9,7 @@ from sklearn.svm import SVC
 import pickle
 import pandas as pd
 import os.path as path
-
-nltk.download('averaged_perceptron_tagger')
+import os
 
 
 def category_cleaner(category):
@@ -24,18 +23,27 @@ def title_cleaner(title, pos=False):
         return title
 
 
-TRAIN_ON_PARTS_OF_SPEECH = True
+def str_to_bool(s):
+    if str(s) == 'True' or str(s) == 'true':
+        return True
+    elif str(s) == 'False' or str(s) == 'false':
+        return False
+    else:
+        raise ValueError  # evil ValueError that doesn't tell you what the wrong value was
+
+
+TRAIN_ON_PARTS_OF_SPEECH = str_to_bool(os.getenv('USE_POS_CLICKBAIT') or True)
 
 
 def train():
     cwd = path.join(path.dirname(__file__), 'data/pos/*.json')
     # Make this `True` to train on parts of speech instead of words.
-    TRAIN_ON_PARTS_OF_SPEECH = True
+    print("Started clickbait training...")
     if TRAIN_ON_PARTS_OF_SPEECH:
         cwd = path.join(path.dirname(__file__), 'data/pos/*.json')
         data_files = glob.glob(cwd)
     else:
-        cwd = path.join(path.dirname(__file__), 'data/data/*.json')
+        cwd = path.join(path.dirname(__file__), 'data/*.json')
         data_files = glob.glob(cwd)
 
     # All of these complicated splits are used to ensure that there are both types
@@ -83,16 +91,28 @@ def train():
     X_test = vectorizer.transform(X_test)
     Y_predicted = clf.predict(X_test)
 
-    print('Classification report:')
+    print('Classification report clickbait:')
     print(metrics.classification_report(Y_test, Y_predicted))
     print('')
 
-    modelFile = path.join(path.dirname(__file__), "model.svm")
+    if TRAIN_ON_PARTS_OF_SPEECH:
+        modelFile = path.join(path.dirname(__file__),
+                              "model-POS.svm")
+    else:
+        modelFile = path.join(path.dirname(__file__),
+                              "model.svm")
+
     outfile = open(modelFile, 'wb')
     pickle.dump(clf, outfile)
     outfile.close()
 
-    vectorizerFile = path.join(path.dirname(__file__), "vectorizer.tfidf")
+    if TRAIN_ON_PARTS_OF_SPEECH:
+        vectorizerFile = path.join(path.dirname(
+            __file__), "vectorizer-POS.tfidf")
+    else:
+        vectorizerFile = path.join(path.dirname(__file__),
+                                   "vectorizer.tfidf")
+
     outfile = open(vectorizerFile, 'wb')
     pickle.dump(vectorizer, outfile)
     outfile.close()

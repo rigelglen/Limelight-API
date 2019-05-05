@@ -18,6 +18,11 @@ from keywords import keywords as key
 import os
 import urllib3
 from util import article_util
+import nltk
+nltk.download('averaged_perceptron_tagger')
+
+clickbait_clf.get_classifier()
+writing_clf.get_classifier()
 
 debugFlag = True
 
@@ -55,16 +60,35 @@ async def classify(request):
         return json({"message": str(e)}, 400)
 
 
-@app.route('/classifyText')
+@app.route('/classifyText', methods=['POST'])
 async def classifyText(request):
-    if 'title' not in request.query_params:
-        return json({"message": "Please pass a title"}, 400)
-    if 'text' not in request.query_params:
-        return json({"message": "Please pass text"}, 400)
+    req_json = await request.json()
+    if 'title' not in req_json:
+        if 'text' not in req_json:
+            return json({"message": "Please pass a title or text"}, 400)
+        try:
+            text = req_json.get('text')
+            resSenti = senti.sentiment_analyzer_scores(text)
+            resWriting = writing_clf.get_classifier().classify(text)
+            res = {"sentiment": resSenti, "writing": resWriting}
+            return json(res)
+        except ValueError as e:
+            return json({"message": str(e)}, 400)
+
+    if 'text' not in req_json:
+        if 'title' not in req_json:
+            return json({"message": "Please pass a title or text"}, 400)
+        try:
+            title = req_json.get('title')
+            resClickBait = clickbait_clf.get_classifier().classify(title)
+            res = {"clickbait": resClickBait}
+            return json(res)
+        except ValueError as e:
+            return json({"message": str(e)}, 400)
 
     try:
-        title = request.query_params.get('title')
-        text = request.query_params.get('text')
+        title = req_json.get('title')
+        text = req_json.get('text')
         resClickBait = clickbait_clf.get_classifier().classify(title)
         resSenti = senti.sentiment_analyzer_scores(text)
         resWriting = writing_clf.get_classifier().classify(text)

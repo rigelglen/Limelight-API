@@ -16,12 +16,20 @@ class _Classifier:
 
     def __init__(self):
         try:
-            modelFile = open(
-                path.join(path.dirname(__file__), "model.svm"), 'rb')
-            print("Clickbait Classifier loaded")
-            vectorizerFile = open(
-                path.join(path.dirname(__file__), "vectorizer.tfidf"), 'rb')
-            print("Clickbait Vectorizer loaded")
+            if TRAIN_ON_PARTS_OF_SPEECH:
+                modelFile = open(
+                    path.join(path.dirname(__file__), "model-POS.svm"), 'rb')
+                print("Clickbait Classifier loaded")
+                vectorizerFile = open(
+                    path.join(path.dirname(__file__), "vectorizer-POS.tfidf"), 'rb')
+                print("Clickbait Vectorizer loaded")
+            else:
+                modelFile = open(
+                    path.join(path.dirname(__file__), "model.svm"), 'rb')
+                print("Clickbait Classifier loaded")
+                vectorizerFile = open(
+                    path.join(path.dirname(__file__), "vectorizer.tfidf"), 'rb')
+                print("Clickbait Vectorizer loaded")
             self.clf = pickle.load(modelFile)
             self.vectorizer = pickle.load(vectorizerFile)
             modelFile.close()

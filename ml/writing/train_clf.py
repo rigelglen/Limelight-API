@@ -10,24 +10,57 @@ from xgboost import XGBClassifier
 import pickle
 import pandas as pd
 import os.path as path
+import re
+import spacy
+import os
 
-USE_POS_TAG = True
-nltk.download('averaged_perceptron_tagger')
+
+def str_to_bool(s):
+    if str(s) == 'True' or str(s) == 'true':
+        return True
+    elif str(s) == 'False' or str(s) == 'false':
+        return False
+    else:
+        raise ValueError  # evil ValueError that doesn't tell you what the wrong value was
+
+
+USE_POS_TAG = str_to_bool(os.getenv('USE_POS_WRITING') or True)
+
+nlp = spacy.load("en_core_web_sm", parser=False, tagger=True, entity=False)
 
 
 def prepare_text(text):
+    sents = nltk.sent_tokenize(text)
+    text = ' '.join(sents)
+    text = text.replace("\r", " ")
+    text = text.replace("\n", " ")
+    text = re.sub(r'http\S+', '', text)
+    text = text.replace("@", "")
+    text = text.replace("#", "")
+    text = text.replace("%", "")
+    text = text.replace('₹', "")
+    text = re.sub(' +', ' ', text)
+    final = ''
     if USE_POS_TAG == True:
-        return ' '.join(map(itemgetter(1), nltk.pos_tag(nltk.word_tokenize(text.lower()))))
-    return text
+        doc = nlp(text)
+        for token in doc:
+            if(token.pos_ == 'SYM'):
+                continue
+            final = final + ' ' + str(token.pos_)
+    else:
+        final = text
+    final = final.lstrip().rstrip()
+    return final
 
 
 def train():
+    print("Starting writing classifier training...")
     if USE_POS_TAG:
         df = pd.read_csv(path.join(path.dirname(
             __file__), 'data/scrapeResultPOS.csv'))
     else:
         df = pd.read_csv(path.join(path.dirname(
-            __file__), 'data/scrapeResult.csv'))
+            __file__), 'data/scrapeResultCleaned.csv'))
 
     # missing_rows = []
 
@@ -46,7 +79,6 @@ def train():
     for index, row in df.iterrows():
         if row['label'] == 1:
             if count_fake > 5000:
-                #       print(df.index[index])
                 df.drop([df.index[index]])
                 continue
             count_fake += 1
@@ -91,9 +123,8 @@ def train():
     clf = XGBClassifier()
     clf.fit(X_train, Y_train)
     Y_predicted = clf.predict(X_test)
-    score = metrics.accuracy_score(Y_test, Y_predicted)
-    print("Accuracy:   %0.3f" % score)
-    print("Classification Report")
+
+    print("Classification Report Writing")
     print(metrics.classification_report(Y_test, Y_predicted))
 
     if(USE_POS_TAG):

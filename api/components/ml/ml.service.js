@@ -4,7 +4,7 @@ const Topic = db.Topic;
 const User = db.User;
 const _ = require('lodash');
 const { getRedisReport, setRedisReport } = require('../../core/db');
-
+const logger = require('../../core/logger');
 const writingStyleUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/writing`;
 const clickbaitUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/clickbait`;
 const sentimentUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/sentiment`;
@@ -86,43 +86,59 @@ async function getSentiment(url) {
   }
 }
 
-async function getClassificationText(title, text) {
+async function getClassificationText({ title, text }) {
   try {
-    const response = await axios.get(classificationTextUrl, {
-      params: { title, text },
+    // console.log(`Title and text are ${title} \n\n\n ${text}`);
+    const response = await axios.post(classificationTextUrl, {
+      title,
+      text,
     });
 
-    const clickbait = response.data.clickbait.clickbait * 100;
-    const news = response.data.clickbait.news * 100;
-    const compound = response.data.sentiment.compound * 100;
-    const negative = response.data.sentiment.neg * 100;
-    const positive = response.data.sentiment.pos * 100;
-    const neutral = response.data.sentiment.neu * 100;
-    const fake = response.data.writing.fake * 100;
-    const real = response.data.writing.real * 100;
+    const clickbait = response.data.clickbait ? response.data.clickbait.clickbait * 100 : undefined;
+    const news = response.data.clickbait ? response.data.clickbait.news * 100 : undefined;
+    const compound = response.data.sentiment ? response.data.sentiment.compound * 100 : undefined;
+    const negative = response.data.sentiment ? response.data.sentiment.neg * 100 : undefined;
+    const positive = response.data.sentiment ? response.data.sentiment.pos * 100 : undefined;
+    const neutral = response.data.sentiment ? response.data.sentiment.neu * 100 : undefined;
+    const fake = response.data.writing ? response.data.writing.fake * 100 : undefined;
+    const real = response.data.writing ? response.data.writing.real * 100 : undefined;
 
-    const sentiMessage =
-      sentimentMessage[[ negative, neutral, positive ].indexOf(Math.max(...[ negative, neutral, positive ]))];
+    let clickbaitReport;
+    let sentimentReport;
+    let writingReport;
 
-    const report = {
-      disclaimer,
-      clickbait: {
+    if (title) {
+      clickbaitReport = {
         clickbait,
         news,
         message: clickbaitMessage[parseInt(clickbait / 20)],
-      },
-      sentiment: {
+      };
+    }
+
+    if (text) {
+      const sentiMessage =
+        sentimentMessage[[ negative, neutral, positive ].indexOf(Math.max(...[ negative, neutral, positive ]))];
+
+      sentimentReport = {
         compound,
         negative,
         positive,
         neutral,
         message: sentiMessage,
-      },
-      writing: {
+      };
+
+      writingReport = {
         fake,
         real,
         message: writingMessage[parseInt(real / 10)],
-      },
+      };
+    }
+
+    const report = {
+      disclaimer,
+      clickbait: clickbaitReport,
+      sentiment: sentimentReport,
+      writing: writingReport,
     };
 
     return report;
@@ -136,6 +152,7 @@ async function getClassification(url) {
   try {
     const reportRedis = await getRedisReport(url);
     if (reportRedis) {
+      logger.info('From cache');
       return JSON.parse(reportRedis);
     }
 
@@ -180,6 +197,7 @@ async function getClassification(url) {
 
     return report;
   } catch (e) {
+    logger.error(e);
     if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
   }

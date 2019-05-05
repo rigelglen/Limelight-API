@@ -7,7 +7,7 @@ router.get('/checkWritingStyle', validateUrl, getWritingStyle);
 router.get('/checkSentiment', validateUrl, getSentiment);
 router.get('/getKeywords', getKeywords);
 router.get('/getClassification', validateUrl, getClassification);
-router.get('/getClassificationText', getClassificationText);
+router.post('/getClassificationText', getClassificationText);
 
 module.exports = router;
 
@@ -48,7 +48,7 @@ function getClassification(req, res, next) {
 
 function getClassificationText(req, res, next) {
   mlService
-    .getClassificationText(req.query.title, req.query.text)
+    .getClassificationText(req.body)
     .then((data) => (data ? res.json(data) : res.status(400).json({ message: 'An error occured.' })))
     .catch((err) => next(err));
 }
@@ -63,6 +63,10 @@ function addHttp(url) {
 function validateUrl(req, res, next) {
   if (req.query.url && req.query.url.length === 0) {
     throw 'Invalid parameter url';
+  }
+
+  if (!req.query.url && (!req.query.title && !req.query.text)) {
+    throw 'Please give title or text';
   }
 
   next();
