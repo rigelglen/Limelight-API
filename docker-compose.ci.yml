@@ -9,6 +9,8 @@ services:
       - APP_ENV=${APP_ENV}
       - FLASK_HOST=${FLASK_HOST}
       - FLASK_PORT=${FLASK_PORT}
+      - USE_POS_WRITING=${USE_POS_WRITING}
+      - USE_POS_CLICKBAIT=${USE_POS_CLICKBAIT}
     build:
       context: ./ml
       dockerfile: Dockerfile
