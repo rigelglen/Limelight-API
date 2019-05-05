@@ -26,7 +26,7 @@ def str_to_bool(s):
 
 USE_POS_TAG = str_to_bool(os.getenv('USE_POS_WRITING') or True)
 
-nlp = spacy.load("en_core_web_md", parser=False, tagger=True, entity=False)
+nlp = spacy.load("en_core_web_sm", parser=False, tagger=True, entity=False)
 
 
 def prepare_text(text):
