@@ -8,9 +8,9 @@
     "url": "https://gitlab.com/mirandajyothy/limelight_api.git"
   },
   "scripts": {
-    "start": "NODE_ENV=development nodemon ./index.js",
+    "start": "NODE_ENV=development pm2 start ./index.js --watch",
     "test": "NODE_ENV=test jest -i --colors --verbose",
-    "start-dev": "nodemon ./index.js"
+    "start-dev": "pm2 start ./index.js --watch"
   },
   "dependencies": {
     "axios": "^0.18.0",
@@ -20,18 +20,18 @@
     "dotenv": "^8.0.0",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1",
-    "helmet": "^3.17.0",
+    "helmet": "^3.18.0",
     "html2plaintext": "^2.1.2",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.11",
-    "metascraper": "^5.1.1",
-    "metascraper-description": "^5.1.0",
-    "metascraper-image": "^5.1.0",
-    "metascraper-publisher": "^5.1.0",
-    "metascraper-title": "^5.1.0",
+    "metascraper": "^5.2.4",
+    "metascraper-description": "^5.2.4",
+    "metascraper-image": "^5.2.4",
+    "metascraper-publisher": "^5.2.4",
+    "metascraper-title": "^5.2.4",
     "moment": "^2.24.0",
-    "mongodb": "^3.2.3",
-    "mongoose": "^5.5.5",
+    "mongodb": "^3.2.4",
+    "mongoose": "^5.5.7",
     "morgan": "^1.9.1",
     "newsapi": "^2.4.0",
     "pm2": "^3.5.0",
@@ -41,7 +41,7 @@
     "xml2js-es6-promise": "^1.1.1"
   },
   "devDependencies": {
-    "jest": "^24.7.1",
+    "jest": "^24.8.0",
     "superagent": "^5.0.5",
     "superagent-use": "^0.1.0",
     "supertest": "^4.0.2",

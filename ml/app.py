@@ -8,7 +8,6 @@
 
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse as json
-import uvicorn
 
 from clickbait import classifier as clickbait_clf
 from writing import classifier as writing_clf
@@ -16,7 +15,6 @@ from sentiment import sentiment as senti
 from keywords import keywords as key
 
 import os
-import urllib3
 from util import article_util
 import nltk
 nltk.download('averaged_perceptron_tagger')
