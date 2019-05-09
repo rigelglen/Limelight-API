@@ -6,18 +6,14 @@ const { promisify } = require('util');
 const logger = require('./logger');
 
 mongoose.Promise = global.Promise;
-const dbOptions = {
-  useCreateIndex: true,
-  useNewUrlParser: true,
-  autoReconnect: true,
-  reconnectTries: 5,
-};
+
 let redisClient;
 let redisClientReport;
 let getRedisReport;
 let setRedisReport;
 let getRedisMulti;
 let setRedisMulti;
+
 try {
   redisClient = redis.createClient({
     host: process.env.REDIS_HOST,
@@ -39,19 +35,48 @@ try {
   if (process.env.NODE_ENV === 'development')
     redisClient.on('connect', () => logger.info('Successfully connected to redis!'));
 } catch (e) {
-  console.error(e);
+  logger.error(e.message);
 }
 
-const url =
-  process.env.NODE_ENV === 'test'
-    ? `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env
-        .MONGO_HOST}/${process.env.MONGODB_DB_TEST}?authSource=admin`
-    : `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env
-        .MONGO_HOST}/${process.env.MONGODB_DB}?authSource=admin`;
+async function connectMongo() {
+  const dbOptions = {
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    autoReconnect: true,
+    reconnectTries: 5,
+  };
 
-mongoose.connect(url, dbOptions).catch((ex) => {
-  process.exit(1);
-});
+  const url =
+    process.env.NODE_ENV === 'test'
+      ? `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env
+          .MONGO_HOST}/${process.env.MONGODB_DB_TEST}?authSource=admin`
+      : `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env
+          .MONGO_HOST}/${process.env.MONGODB_DB}?authSource=admin`;
+  try {
+    await mongoose.connect(url, dbOptions);
+    if (process.env.NODE_ENV === 'development') logger.info(`Connected to MongoDB`);
+  } catch (e) {
+    process.exit(1);
+  }
+}
+
+async function disconnectMongo() {
+  await mongoose.connection.close();
+  await mongoose.disconnect();
+}
+
+async function disconnectRedis() {
+  await new Promise((resolve, reject) => {
+    redisClient.quit(() => {
+      resolve();
+    });
+  });
+  await new Promise((resolve, reject) => {
+    redisClientReport.quit(() => {
+      resolve();
+    });
+  });
+}
 
 module.exports = {
   User,
@@ -63,4 +88,7 @@ module.exports = {
   redisClientReport,
   getRedisMulti,
   setRedisMulti,
+  connectMongo,
+  disconnectMongo,
+  disconnectRedis,
 };

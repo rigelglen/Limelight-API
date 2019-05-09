@@ -3,6 +3,7 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const User = require('./../components/users/user.model');
 const Topic = require('./../components/topic/topic.model');
+const { connectMongo, connectRedis } = require('./../core/db');
 
 const bcrypt = require('bcryptjs');
 

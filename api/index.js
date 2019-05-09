@@ -2,7 +2,7 @@ const { app } = require('./server');
 const Topic = require('./components/topic/topic.model');
 const { categories } = require('./util/test.seed');
 const port = process.env.NODE_PORT;
-const { mongoose, redisClient, redisClientReport } = require('./core/db');
+const { disconnectMongo, disconnectRedis } = require('./core/db');
 const logger = require('./core/logger');
 
 Topic.insertMany(categories, { ordered: false })
@@ -20,18 +20,8 @@ const server = app.listen(port, function() {
 if (process.env.NODE_ENV !== 'test') {
   process.on('SIGINT', async function() {
     try {
-      await mongoose.connection.close();
-      await mongoose.disconnect();
-      await new Promise((resolve, reject) => {
-        redisClient.quit(() => {
-          resolve();
-        });
-      });
-      await new Promise((resolve, reject) => {
-        redisClientReport.quit(() => {
-          resolve();
-        });
-      });
+      await disconnectMongo();
+      await disconnectRedis();
       process.exit(0);
     } catch (e) {
       process.exit(1);

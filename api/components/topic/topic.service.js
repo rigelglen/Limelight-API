@@ -11,6 +11,7 @@ module.exports = {
 async function getFollows(uid) {
   const userFollows = await User.findById(uid);
   const follows = await Topic.find({ _id: { $in: userFollows.follows } }).select('-cache');
+
   return follows.map((follow) => {
     return {
       ...follow.toObject(),

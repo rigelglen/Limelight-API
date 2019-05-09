@@ -28,7 +28,7 @@ testJob:
     - docker
   script:
     - docker-compose -f docker-compose.ci.yml pull
-    - docker-compose -f docker-compose.ci.yml run app-test
+    - docker-compose -f docker-compose.ci.yml run --rm app-test
 
 deployJob:
   stage: deploy

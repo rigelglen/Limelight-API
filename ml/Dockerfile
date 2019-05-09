@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y apt-transport-https \
 
 # Install libraries
 COPY requirements.txt /usr/app/
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt && \ 
+RUN python -m pip install --upgrade pip && python -m pip install --no-cache-dir -r requirements.txt && \ 
   python -m spacy download en_core_web_sm
 # Copy application files
 COPY . /usr/app

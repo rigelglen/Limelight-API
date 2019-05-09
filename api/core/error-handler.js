@@ -1,3 +1,4 @@
+const logger = require('./logger');
 module.exports = errorHandler;
 
 function errorHandler(err, req, res, next) {
@@ -21,5 +22,7 @@ function errorHandler(err, req, res, next) {
   }
 
   // default to 500 server error
-  return res.status(500).json({ message: err.message });
+  logger.error(err.message);
+  if (process.env.NODE_ENV === 'development') return res.status(500).json({ message: err.message });
+  else return res.status(500).json({ message: 'Something went wrong.' });
 }

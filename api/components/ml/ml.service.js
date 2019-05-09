@@ -3,7 +3,7 @@ const db = require('./../../core/db');
 const Topic = db.Topic;
 const User = db.User;
 const _ = require('lodash');
-const { getRedisReport, setRedisReport } = require('../../core/db');
+const { getRedisReport, setRedisReport, redisClientReport } = require('../../core/db');
 const logger = require('../../core/logger');
 const writingStyleUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/writing`;
 const clickbaitUrl = `http://${process.env.FLASK_HOST}:${process.env.FLASK_PORT}/clickbait`;
@@ -88,7 +88,6 @@ async function getSentiment(url) {
 
 async function getClassificationText({ title, text }) {
   try {
-    // console.log(`Title and text are ${title} \n\n\n ${text}`);
     const response = await axios.post(classificationTextUrl, {
       title,
       text,
@@ -197,7 +196,7 @@ async function getClassification(url) {
 
     return report;
   } catch (e) {
-    logger.error(e);
+    logger.error(e.message);
     if (e.response && e.response.data && e.response.data.message) throw e.response.data.message;
     throw 'Could not fetch report';
   }

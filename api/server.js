@@ -1,5 +1,4 @@
-﻿require('rootpath')();
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -7,11 +6,16 @@ const bodyParser = require('body-parser');
 const jwt = require('./core/jwt');
 const errorHandler = require('./core/error-handler');
 const helmet = require('helmet');
+const { connectMongo } = require('./core/db');
 
 if (process.env.NODE_ENV === 'development') {
   const morgan = require('morgan');
   app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 }
+
+(async () => {
+  await connectMongo();
+})();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

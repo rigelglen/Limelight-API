@@ -1,7 +1,7 @@
 const request = require('supertest');
 const { populateUsers, populateTopics, topics, users } = require('./../../util/test.seed');
 const { app } = require('./../../server');
-const { mongoose, redisClient, redisClientReport } = require('./../../core/db');
+const { disconnectMongo, disconnectRedis } = require('./../../core/db');
 const use = require('superagent-use');
 const captureError = require('supertest-capture-error');
 
@@ -18,18 +18,9 @@ beforeAll(populateTopics);
 
 describe('Users', () => {
   afterAll(async () => {
-    await mongoose.connection.close();
-    await mongoose.disconnect();
-    await new Promise((resolve, reject) => {
-      redisClient.quit(() => {
-        resolve();
-      });
-    });
-    await new Promise((resolve, reject) => {
-      redisClientReport.quit(() => {
-        resolve();
-      });
-    });
+    await disconnectMongo();
+    await disconnectRedis();
+    await new Promise((resolve) => setTimeout(() => resolve(), 500));
   });
 
   describe('POST /users/register', () => {

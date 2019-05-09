@@ -2,6 +2,13 @@
 
 REST API back-end for Limelight - a news app that uses machine learning to analyze and classify unreliable news articles.
 
+# Table of Contents
+1. [Getting Started](#getting-started)
+2. [Prerequisites](#prerequisites)
+3. [Installing](#installing)
+4. [Running tests](#running-tests)
+5. [Deployment](#deployment)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
@@ -53,7 +60,7 @@ docker-compose -f docker-compose.deploy.yml
 
 * [Docker](https://www.docker.com/) - For containerization
 * [Express](https://expressjs.com/) - For REST API
-* [Flask](http://flask.pocoo.org/) - For serving the machine learning models
+* [Starlette](https://www.starlette.io/) - For serving the machine learning models
 
 
 ## License
