@@ -23,7 +23,7 @@
     "helmet": "^3.18.0",
     "html2plaintext": "^2.1.2",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "metascraper": "^5.2.4",
     "metascraper-description": "^5.2.4",
     "metascraper-image": "^5.2.4",
